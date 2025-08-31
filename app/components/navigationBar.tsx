@@ -21,7 +21,7 @@ export const NavigationBar = ()=>{
     }
     return(
         <div
-        className="w-full flex h-max flex-row items-center gap-4 sticky top-0 bg-white dark:bg-black dark:text-white z-50 p-4"
+        className="w-full flex h-max flex-row items-center gap-2 sm:gap-4 lg:gap-4 sticky top-0 bg-white dark:bg-black dark:text-white z-50 p-4"
         >
             <SideBar isOpen = {isSideBarOpen} onClose={onCloseSideBar}/>
             <MenuBar onOpen={onOpenSideBar}/>

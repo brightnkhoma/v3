@@ -1,4 +1,4 @@
-import { audioFormats, Content, ContentFile, ContentItem, ContentType, Folder, LicenseType, LikedContent, Movie, Music, MusicFolderItem, MusicFolderType, PurchasedContent, User, UserWallet, VideoFolderItem, VideoFolderType, videoFormats, zathuPath,Comment, FilteredContent, MusicRowProps } from "../types"
+import { audioFormats, Content, ContentFile, ContentItem, ContentType, Folder, LicenseType, LikedContent, Movie, Music, MusicFolderItem, MusicFolderType, PurchasedContent, User, UserWallet, VideoFolderItem, VideoFolderType, videoFormats, zathuPath,Comment, FilteredContent, MusicRowProps, Promotion } from "../types"
 import axios from "axios"
 import { maiPath } from "./global"
 import { UploadTask, ref, uploadBytesResumable, UploadTaskSnapshot, getDownloadURL } from "firebase/storage"
@@ -681,9 +681,10 @@ export const listenToFolderPosterItemChanges = async (user : User, item : MusicF
 
 }
 
-export const onGetFolderItems = async (user : User, item : VideoFolderItem | MusicFolderItem): Promise<(MusicFolderItem | VideoFolderItem)[]>=>{
+export const onGetFolderItems = async (user : User, item : VideoFolderItem | MusicFolderItem, _customer ? : User): Promise<(MusicFolderItem | VideoFolderItem)[]>=>{
     try {
-        const res = await axios.post(`${maiPath}/get-folder-items`,{user,item})
+        const customer : User = _customer? _customer : {userId : "123"} as User
+        const res = await axios.post(`${maiPath}/get-folder-items`,{user,item,customer})
         if(res.status == 200 && res.data.success){
             return res.data.items as (MusicFolderItem | VideoFolderItem)[]
         }
@@ -874,4 +875,17 @@ export const getCommentsCount = async(item : MusicFolderItem) : Promise<number>=
         
     }
     return 0
+}
+
+export const getPromotions = async(user : User)=>{
+    try {
+        const res = await axios.post(`${maiPath}/get-promotions`,{user})
+        if(res.status == 200){
+            return res.data.promotions as Promotion[]
+        }
+    } catch (error) {
+        console.log(error);
+        
+    }
+    return []
 }

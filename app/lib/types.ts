@@ -294,3 +294,211 @@ export interface FilteredContent{
   name : string;
   items : MusicFolderItem[]
 }
+
+
+// Types based on the provided interfaces
+export enum PromotionType {
+  SLIDER = "SLIDER",
+  ROW_ITEM = "ROW_ITEM",
+  ARTIST_ROW = "ARTIST_ROW",
+  CUSTOM_GROUP = "CUSTOM_GROUP"
+}
+
+export enum PromotionStatus {
+  ACTIVE = "ACTIVE",
+  FROZEN = "FROZEN",
+  EXPIRED = "EXPIRED",
+  DELETED = "DELETED",
+  SCHEDULED = "SCHEDULED"
+}
+
+export interface Promotion {
+  id: string;
+  musicItem: MusicFolderItem;
+  type: PromotionType;
+  groupName?: string;
+  startDate: Date;
+  endDate: Date;
+  onExpiry: 'freeze' | 'delete';
+  priority: number;
+  status: PromotionStatus;
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+
+
+
+export interface PromotionSummary {
+  totalPromotions: number;
+  activePromotions: number;
+  scheduledPromotions: number;
+  expiredPromotions: number;
+  frozenPromotions: number;
+  
+  existingPromotionGroups: string[];
+  promotionsByGroup: {
+    groupName: string;
+    count: number;
+    activeCount: number;
+  }[];
+  
+  promotionsByType: {
+    type: PromotionType;
+    count: number;
+    activeCount: number;
+  }[];
+  
+  upcomingExpirations: {
+    promotionId: string;
+    promotionName: string;
+    endDate: Date;
+    daysUntilExpiry: number;
+  }[];
+  
+  recentlyAdded: {
+    promotionId: string;
+    promotionName: string;
+    startDate: Date;
+    type: PromotionType;
+  }[];
+  
+  performanceMetrics?: {
+    totalImpressions: number;
+    averageClickThroughRate: number;
+    bestPerformingPromotion?: {
+      id: string;
+      name: string;
+      clickThroughRate: number;
+    };
+  };
+  
+  highPriorityPromotions: number;
+  mediumPriorityPromotions: number;
+  lowPriorityPromotions: number;
+  
+  promotionsByContentType: {
+    contentType: 'Album' | 'Playlist' | 'Track' | 'Artist';
+    count: number;
+  }[];
+  
+  dateRange: {
+    earliestStart: Date;
+    latestEnd: Date;
+  };
+}
+
+
+export const getDefaultPromotionSummary = (): PromotionSummary => {
+  const now = new Date();
+  const thirtyDaysFromNow = new Date();
+  thirtyDaysFromNow.setDate(now.getDate() + 30);
+  
+  return {
+    totalPromotions: 0,
+    activePromotions: 0,
+    scheduledPromotions: 0,
+    expiredPromotions: 0,
+    frozenPromotions: 0,
+    
+    existingPromotionGroups: [],
+    promotionsByGroup: [],
+    
+    promotionsByType: [
+      { type: PromotionType.SLIDER, count: 0, activeCount: 0 },
+      { type: PromotionType.ROW_ITEM, count: 0, activeCount: 0 },
+      { type: PromotionType.ARTIST_ROW, count: 0, activeCount: 0 },
+      { type: PromotionType.CUSTOM_GROUP, count: 0, activeCount: 0 }
+    ],
+    
+    upcomingExpirations: [],
+    recentlyAdded: [],
+    
+    performanceMetrics: {
+      totalImpressions: 0,
+      averageClickThroughRate: 0,
+      bestPerformingPromotion: {
+        id: "",
+        name: "",
+        clickThroughRate: 0
+      }
+    },
+    
+    highPriorityPromotions: 0,
+    mediumPriorityPromotions: 0,
+    lowPriorityPromotions: 0,
+    
+    promotionsByContentType: [
+      { contentType: 'Album', count: 0 },
+      { contentType: 'Playlist', count: 0 },
+      { contentType: 'Track', count: 0 },
+      { contentType: 'Artist', count: 0 }
+    ],
+    
+    dateRange: {
+      earliestStart: now,
+      latestEnd: thirtyDaysFromNow
+    }
+  };
+};
+
+export const getDefaultDetailedPromotionSummary = (): DetailedPromotionSummary => {
+  const baseSummary = getDefaultPromotionSummary();
+  
+  return {
+    ...baseSummary,
+    
+    promotionsByGenre: [],
+    
+    promotionsByOwner: [],
+    
+    averagePromotionDuration: 0,
+    shortestActivePromotion: 0,
+    longestActivePromotion: 0,
+    
+    recentlyModified: [],
+    
+    conversionMetrics: {
+      totalConversions: 0,
+      conversionRate: 0,
+      revenueGenerated: 0
+    }
+  };
+};
+export interface DetailedPromotionSummary extends PromotionSummary {
+  promotionsByGenre: {
+    genre: string;
+    count: number;
+  }[];
+  
+  promotionsByOwner: {
+    ownerId: string;
+    ownerName: string;
+    count: number;
+  }[];
+  
+  averagePromotionDuration: number; 
+  shortestActivePromotion: number; 
+  longestActivePromotion: number; 
+  recentlyModified: {
+    promotionId: string;
+    promotionName: string;
+    modifiedDate: Date;
+    modifiedBy: string;
+    changeType: 'created' | 'updated' | 'statusChanged';
+  }[];
+  
+  conversionMetrics?: {
+    totalConversions: number;
+    conversionRate: number;
+    revenueGenerated: number;
+  };
+}
+
+export  interface PromotionGroup {
+  items: MusicFolderItem[];
+  name: string;
+  type: PromotionType;
+  groupName?: string;
+}

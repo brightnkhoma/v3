@@ -36,7 +36,8 @@ type MusicInfoProps = {
   image : string,
   commentsCount : number,
   onNavigateToComments : ()=> void,
-  handleShare : ()=> void
+  handleShare : ()=> void,
+  id : string
 }
 
 type PlayOptionsProps = {
@@ -193,6 +194,7 @@ useEffect(()=>{
   return (
     <div className="flex flex-col bg-gradient-to-b from-primary/20 via-background to-background rounded-xl p-4 md:p-6 w-full  mx-auto shadow-2xl border border-border">
       <MusicInfo
+      id={audioManager.item?.owner.userId || "not-found"}
       handleShare={handleShare}
       onNavigateToComments={onNavigateToComments}
       commentsCount={commentsCount}
@@ -250,7 +252,8 @@ const MusicInfo = ({
   image,
   commentsCount,
   onNavigateToComments,
-  handleShare
+  handleShare,
+  id
 }: MusicInfoProps) => {
   return (
     <div className="flex flex-col md:flex-row w-full gap-4 md:gap-6">
@@ -297,7 +300,7 @@ const MusicInfo = ({
           <span className="text-muted-foreground text-sm">Album • {dateCreated.getFullYear()}</span>
         </div>
 
-        <Artist artist={artist} />
+        <Artist id={id} artist={artist} />
 
         <div className="mt-4 flex-1"></div>
 
@@ -322,7 +325,11 @@ const MusicInfo = ({
   )
 }
 
-const Artist = ({ artist }: { artist: string }) => {
+const Artist = ({ artist,id }: { artist: string ,id : string}) => {
+  const router = useRouter()
+  const onNavigate = ()=>{
+    router.push(`/media/music/album/${id}`)
+  }
   return (
     <div className="flex gap-3 items-center group mt-4">
       <Avatar className="group-hover:ring-2 group-hover:ring-primary transition-all duration-200 h-10 w-10">
@@ -331,7 +338,7 @@ const Artist = ({ artist }: { artist: string }) => {
       </Avatar>
       <div>
         <span className="text-sm text-muted-foreground">Artist</span>
-        <h2 className="hover:underline text-foreground font-medium cursor-pointer">
+        <h2 onClick={onNavigate} className="hover:underline text-foreground font-medium cursor-pointer">
           {artist}
         </h2>
       </div>
