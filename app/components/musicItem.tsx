@@ -289,7 +289,7 @@ export const MusicListSkeleton = () => {
 interface MusicListProps {
   items: MusicFolderItem[];
   className?: string;
-  currentPlayingIndex?: number;
+  currentPlayingIndex?: string;
   onPlay: (index: number) => Promise<void>;
   isLoading?: boolean;
   user: User;
@@ -315,7 +315,7 @@ export const MusicList = ({
             key={`${item.folderName}-${index}`}
             item={item}
             index={index}
-            isPlaying={currentPlayingIndex === index}
+            isPlaying={currentPlayingIndex === item.content.contentId}
             onPlay={async () => await onPlay(index)}
             user={user}
           />

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Play, MoreHorizontal, Heart, Share, Headphones } from 'lucide-react';
+import { Play, MoreHorizontal, Heart, Share, Headphones, Loader, Loader2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,14 +27,16 @@ import { useAppDispatch } from '../lib/local/redux/store';
 interface PromotionGroupRowProps {
   group: PromotionGroup;
   className?: string;
+  isMusicLoading : string | null
 }
 
 interface MusicItemProps {
   item: MusicFolderItem;
   isArtist?: boolean;
+  isLoading : boolean
 }
 
-const MusicItem: React.FC<MusicItemProps> = ({ item, isArtist = false }) => {
+const MusicItem: React.FC<MusicItemProps> = ({ item, isArtist = false,isLoading }) => {
   const x = item;
   const id = x.content.contentId;
   const thumNail = x.content.thumbnail || x.folderPoster;
@@ -79,7 +81,7 @@ const MusicItem: React.FC<MusicItemProps> = ({ item, isArtist = false }) => {
 
   if (isArtist) {
     return (
-      <div onClick={handleItemClick} className="flex flex-col items-center space-y-2 min-w-[80px]">
+      <div onClick={handleItemClick} className="flex flex-col items-center space-y-2 min-w-[80px] relative">
         <div className="relative w-20 h-20 rounded-full overflow-hidden group">
           <Image
             src={thumNail || '/images/default-artist.png'}
@@ -108,9 +110,11 @@ const MusicItem: React.FC<MusicItemProps> = ({ item, isArtist = false }) => {
 
   return (
     <Card 
-      className="group bg-background hover:bg-accent transition-colors w-[160px] sm:w-[180px] cursor-pointer"
+      className="group bg-background hover:bg-accent transition-colors w-[160px] sm:w-[180px] cursor-pointer relative"
       onClick={handleItemClick}
     >
+              {isLoading && <MyLoader/>}
+
       <CardContent className="p-3">
         <div className="relative aspect-square mb-3 rounded-md overflow-hidden">
           <Image
@@ -167,7 +171,7 @@ const MusicItem: React.FC<MusicItemProps> = ({ item, isArtist = false }) => {
   );
 };
 
-const CustomMusicItem: React.FC<{ item: MusicFolderItem }> = ({ item }) => {
+const CustomMusicItem: React.FC<{ item: MusicFolderItem, isMusicLoading : boolean }> = ({ item,isMusicLoading}) => {
   const x = item;
   const id = x.content.contentId;
   const thumNail = x.content.thumbnail || x.folderPoster;
@@ -210,6 +214,9 @@ const CustomMusicItem: React.FC<{ item: MusicFolderItem }> = ({ item }) => {
       className="bg-background hover:bg-accent transition-colors w-[300px] sm:w-[320px] cursor-pointer"
       onClick={handleItemClick}
     >
+      {
+        isMusicLoading && <MyLoader/>
+      }
       <CardContent className="p-4">
         <div className="flex space-x-4">
           <div className="relative w-16 h-16 rounded-md overflow-hidden group flex-shrink-0">
@@ -283,7 +290,8 @@ const CustomMusicItem: React.FC<{ item: MusicFolderItem }> = ({ item }) => {
 
 export const PromotionGroupRow: React.FC<PromotionGroupRowProps> = ({ 
   group, 
-  className = '' 
+  className = '' ,
+  isMusicLoading
 }) => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -399,7 +407,7 @@ export const PromotionGroupRow: React.FC<PromotionGroupRowProps> = ({
       <Swiper {...swiperConfig}>
         {group.items.slice(0, 12).map((item, index) => (
           <SwiperSlide key={`${item.content.contentId}-${index}`} className="!w-auto">
-            <MusicItem item={item} />
+            <MusicItem isLoading = {item.content.contentId ==  isMusicLoading} item={item} />
           </SwiperSlide>
         ))}
       </Swiper>
@@ -417,7 +425,7 @@ export const PromotionGroupRow: React.FC<PromotionGroupRowProps> = ({
       <Swiper {...artistSwiperConfig}>
         {group.items.slice(0, 12).map((item, index) => (
           <SwiperSlide key={`${item.content.contentId}-${index}`} className="!w-auto">
-            <MusicItem item={item} isArtist={true} />
+            <MusicItem isLoading = {item.content.contentId ==  isMusicLoading} item={item} isArtist={true} />
           </SwiperSlide>
         ))}
       </Swiper>
@@ -440,7 +448,7 @@ export const PromotionGroupRow: React.FC<PromotionGroupRowProps> = ({
       <Swiper {...customSwiperConfig}>
         {group.items.map((item, index) => (
           <SwiperSlide key={`${item.content.contentId}-${index}`} className="!w-auto">
-            <CustomMusicItem item={item} />
+            <CustomMusicItem isMusicLoading={isMusicLoading == item.content.contentId} item={item} />
           </SwiperSlide>
         ))}
       </Swiper>
@@ -453,7 +461,7 @@ export const PromotionGroupRow: React.FC<PromotionGroupRowProps> = ({
       <Swiper {...swiperConfig}>
         {group.items.slice(0, 8).map((item, index) => (
           <SwiperSlide key={`${item.content.contentId}-${index}`} className="!w-auto">
-            <MusicItem item={item} />
+            <MusicItem isLoading = {item.content.contentId ==  isMusicLoading} item={item} />
           </SwiperSlide>
         ))}
       </Swiper>
@@ -462,17 +470,28 @@ export const PromotionGroupRow: React.FC<PromotionGroupRowProps> = ({
 
   return (
     <div className={`promotion-group-row ${className} ${isDark ? 'dark-theme' : 'light-theme'}`}>
+      <div></div>
       {renderRowContent()}
     </div>
   );
 };
 
-export const CompactPromotionList: React.FC<{ groups: PromotionGroup[] }> = ({ groups }) => {
+export const CompactPromotionList: React.FC<{ groups: PromotionGroup[], isMusicLoading : string | null }> = ({ groups,isMusicLoading }) => {
   return (
     <div className="space-y-6">
       {groups.map((group, index) => (
-        <PromotionGroupRow key={`${group.type}-${group.groupName || index}`} group={group} />
+        <PromotionGroupRow isMusicLoading={isMusicLoading} key={`${group.type}-${group.groupName || index}`} group={group} />
       ))}
+    </div>
+  );
+};
+
+const MyLoader = () => {
+  return (
+    <div className="flex absolute inset-0 bg-black/50 rounded-2xl animate-pulse backdrop-blur-sm">
+      <div className="m-auto">
+        <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+      </div>
     </div>
   );
 };

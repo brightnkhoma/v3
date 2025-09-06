@@ -5,13 +5,15 @@ import { SliderPromotion } from '@/app/components/sliderPromotion'
 import { getFilteredItems, getFolderItems, getMusic, getPromotions } from '@/app/lib/dataSource/contentDataSource'
 import { RootState, useAppSelector } from '@/app/lib/local/redux/store'
 import { Music, MusicFolderItem, MusicRowItemProps, MusicRowProps, Promotion, PromotionGroup, PromotionType } from '@/app/lib/types'
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
+import { AppContext } from '@/app/appContext'
 
 function MusicHomePage() {
     const {user} = useAppSelector((state : RootState)=> state.auth) || {}
     const [xhotlist, sextHotlis] = useState<MusicRowProps[]>([])
     const [groups, setGroups] = useState<PromotionGroup[]>([])
     const [sliderGroup, setSliderGroup] = useState<PromotionGroup>()
+    const {audioManager} = useContext(AppContext)!
 
    
     const onGetPromotions = async()=>{
@@ -136,7 +138,7 @@ const getPromotionTypeName = (type: PromotionType): string => {
         {sliderGroup && <SliderPromotion group={sliderGroup}/>}
         
         {
-          groups.map((x,i)=>(<PromotionGroupRow group={x} key={i}/>))
+          groups.map((x,i)=>(<PromotionGroupRow isMusicLoading={audioManager.isMusicLoading} group={x} key={i}/>))
         }
         {/* {xhotlist && <MusicColumn x={xhotlist}/>} */}
     </div>

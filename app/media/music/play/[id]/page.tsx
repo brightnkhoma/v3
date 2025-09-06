@@ -19,20 +19,22 @@ import { Comments } from "@/app/components/commentSnippet"
 const MusicPlay = ()=>{
     const x = useParams()
     const {audioManager} = useContext(AppContext)!
-    const [musicAlbum, setMusicAlbum] = useState<MusicFolderItem[]>([...(audioManager.album || [])])
+    const musicAlbum = audioManager.album
     const {user} = useAppSelector((state : RootState)=> state.auth)
-    const dispatch = useAppDispatch()
-    const [isAlbumLoading, setIsAlbulmLoading] = useState<boolean>(false)
+    const currentPlayingMusic =audioManager.item
+    const [isAlbumLoading] = useState<boolean>(false)
     const router = useRouter()
+      const [ui,setUi] = useState<number>(3)
+  const updateUi = useCallback(()=>{
+        setUi(prev=>prev == 3 ? 2 : 3)
+      },[ui])
 
     const onNavigateToComments = ()=>{
          router.push("#xcomments")
     }
 
 
-    const setItem =async (item : MusicFolderItem)=>{
-       await audioManager.setItem(item,setMusicAlbum)
-    }
+    
 
     
 
@@ -44,34 +46,34 @@ const MusicPlay = ()=>{
         if(x){
             const id = x.id 
             const musicItem = await getFolderItem(id as string)
-            if(musicItem && musicItem.content.contentId != audioManager.item?.content.contentId){
-                await setItem(musicItem)
-                setMusicAlbum(audioManager.album)
+            if(musicItem && musicItem.content.contentId && musicItem.content.contentId != audioManager.item?.content.contentId){
+                await audioManager.setItem(musicItem)
             }
         }
     }
 
    
 
-    const onSetAudioFileFromlbum = useCallback(async (index : number)=>{
+    const onSetAudioFileFromlbum = async (index : number)=>{
         {
             const myFile = await getFileContent(musicAlbum[index],user)
             if(myFile){
-
-
-                await audioManager.play(myFile)
-                dispatch(setAudioFile(myFile))
-                setItem(musicAlbum[index])
+                await audioManager.setItem(musicAlbum[index])
             }else{
                 showToast("Failed to load media.")
             }
         
         }
-    },[audioManager.item,musicAlbum])
+    }
 
     useEffect(()=>{
-        onGetMusicFolderItem()
-    },[])
+        const get = async()=>{
+            audioManager._updateUi_ = updateUi
+            await onGetMusicFolderItem()
+
+        }
+        get()
+    },[x])
 
 
   
@@ -82,7 +84,7 @@ const MusicPlay = ()=>{
     return(
         <div className="size-full flex flex-col gap-8">
             <AlbumPlayer onNavigateToComments={onNavigateToComments} item = {audioManager.item}/>
-            <MusicList user={user} currentPlayingIndex={musicAlbum.findIndex(x=> x.content.contentId == audioManager.item!.content.contentId)}  isLoading = {isAlbumLoading} onPlay={onSetAudioFileFromlbum} items={musicAlbum} />
+            <MusicList user={user} currentPlayingIndex={currentPlayingMusic?.content.contentId}  isLoading = {isAlbumLoading} onPlay={onSetAudioFileFromlbum} items={musicAlbum} />
             <div id="xcomments"></div>
             <Comments item={audioManager.item}/>
         </div>

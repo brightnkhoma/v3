@@ -889,3 +889,15 @@ export const getPromotions = async(user : User)=>{
     }
     return []
 }
+
+export const search = async(text : string)=>{
+    try {
+        const res = await axios.post(`${maiPath}/search`,{text})
+        if(res.status == 200){
+            return res.data.items as MusicFolderItem[]
+        }
+    } catch (error) {
+        console.log(error);
+    }
+    return []
+}

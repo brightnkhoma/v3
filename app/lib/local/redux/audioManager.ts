@@ -16,11 +16,13 @@ export class AudioManager {
     progress : number = 0
     updateUi :( ()=> void) | null
     _updateUi : (()=> void) | null = null
+    _updateUi_ : (()=> void) | null = null
     loading : boolean = false
     dispatch : ((file : ContentFile) => void )| null = null
     like : number = 0
     isLiked : boolean = false
     commentsCount : number = 0
+    isMusicLoading : string | null = null
 
     constructor (audioRef: RefObject<HTMLAudioElement | null>, user : User,updateUi : (()=> void) | null = null){
         this.updateUi = updateUi
@@ -42,6 +44,7 @@ export class AudioManager {
     }
     
  async play(file : ContentFile){
+    this.isMusicLoading = file.id
 
 
       if(this.audioRef.current){
@@ -63,6 +66,10 @@ export class AudioManager {
       this.updateUi()
       if(this._updateUi)
       this._updateUi()
+      if(this._updateUi_)
+        this._updateUi_()
+
+      this.isMusicLoading = null
  }
     shuffleArray<T>(array: T[]): T[] {
         const result = [...array];
@@ -207,7 +214,7 @@ export class AudioManager {
 }
 
    async fetchAlbum (myItem : MusicFolderItem){
-    if(!(this.album.map(x=> x.content.contentId).includes(myItem.content.contentId))){
+    if(!(myItem.folderId == this.item?.folderId && this.albumCopy.length > 0)){
             const myAlbum = await getMusicAlbum(myItem)
     this.album = myAlbum
     if(this.playOrder == 'shuffle'){
@@ -216,6 +223,12 @@ export class AudioManager {
         this.albumCopy = myAlbum
     }
     }
+          if(this.updateUi)
+      this.updateUi()
+      if(this._updateUi)
+      this._updateUi()
+      if(this._updateUi_)
+        this._updateUi_()
 
    }
 
@@ -249,6 +262,9 @@ export class AudioManager {
 
         if(this._updateUi)
       this._updateUi()
+
+        if(this._updateUi_)
+        this._updateUi_()
         }
         async onPlayEndedEvent() {
             await this.next()
@@ -338,7 +354,8 @@ export class AudioManager {
  
 
 
-  async setItem (myItem : MusicFolderItem, setAlbum ? : (x : MusicFolderItem[])=> void ) {
+  async setItem (myItem : MusicFolderItem ) {
+    
       this.item = myItem
       if(this.updateUi)
           this.updateUi()
@@ -348,14 +365,13 @@ export class AudioManager {
           await this.play(file)
           if(this.updateUi)
           this.updateUi()
-          await this.fetchAlbum(myItem)
-          if(setAlbum){
-            setAlbum(this.album)
-        }
-        // await this.onGetLikeCount()
+            await this.fetchAlbum(myItem)
+        
     }
     if(this.updateUi)
     this.updateUi()
+if(this._updateUi_)
+        this._updateUi_()
   }
   
   async init(myFile : ContentFile ){

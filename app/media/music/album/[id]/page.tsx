@@ -251,14 +251,14 @@ export default function MusicPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 pb-16">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="container mx-auto px-2 sm:px-6 lg:px-8 py-6">
         {/* User Clicks Balance */}
-        <div className="flex justify-end mb-6">
+        {/* <div className="flex justify-end mb-6">
           <Badge variant="outline" className="px-4 py-2 bg-primary/10 text-primary border-primary/20">
             <Coins className="h-4 w-4 mr-2" />
             {userClicks.toLocaleString()} clicks
           </Badge>
-        </div>
+        </div> */}
 
         {/* Artist Header */}
         <motion.div
@@ -347,7 +347,7 @@ export default function MusicPage() {
               transition={{ duration: 0.3 }}
               className="mb-6 p-3 bg-primary/10 rounded-lg flex items-center"
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 w-[70%] ">
                 <motion.div
                   animate={{ rotate: isPlaying ? 360 : 0 }}
                   transition={{ duration: 10, repeat: isPlaying ? Infinity : 0, ease: "linear" }}
@@ -366,7 +366,7 @@ export default function MusicPage() {
                   )}
                 </motion.div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm truncate text-foreground max-w-[90%] ">
+                  <p className="font-medium text-sm truncate  text-foreground max-w-[100%] ">
                     {currentPlayingMusic.content.title}
                   </p>
                   <p className="text-xs text-muted-foreground truncate">
@@ -374,7 +374,7 @@ export default function MusicPage() {
                   </p>
                 </div>
               </div>
-              <div className=" flex items-center">
+              <div className="ml-auto flex items-center">
                 <motion.div whileTap={{ scale: 0.9 }}>
                   <Button
                     variant="ghost"
@@ -564,7 +564,7 @@ export default function MusicPage() {
                     <p className="text-base text-muted-foreground">{selectedAlbum.content.description}</p>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                  {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
                     {[
                       { label: 'Release Date', value: new Date(selectedAlbum.content.releaseDate).toLocaleDateString() },
                       { label: 'Genre', value: (selectedAlbum.content.genres || []).join(', ') },
@@ -585,7 +585,7 @@ export default function MusicPage() {
                         </p>
                       </motion.div>
                     ))}
-                  </div>
+                  </div> */}
 
                   <div>
                     <div className="flex items-center justify-between mb-4">
@@ -681,7 +681,6 @@ export default function MusicPage() {
     </div>
   );
 }
-
 function TrackRow({
   track,
   index,
@@ -697,149 +696,173 @@ function TrackRow({
   isPlaying: boolean;
   onPlay: () => void;
   onPurchase: () => void;
-  user : User
+  user: User
 }) {
-    const [isPaid, setIsPaid] = useState<boolean>(track.isPaid || false);
-    const [loading, setLoading] = useState<boolean>(false);
-    const [showConfirmDialog, setShowConfirmDialog] = useState<boolean>(false);
+  const [isPaid, setIsPaid] = useState<boolean>(track.isPaid || false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState<boolean>(false);
+  const price = track.content.pricing.price || track.price?.price || 0;
+  const router = useRouter();
+
+  const onCheckIfContentIsPaid = async () => {
     const price = track.content.pricing.price || track.price?.price || 0;
-    const router = useRouter()
-  
-    const onCheckIfContentIsPaid = async () => {
-      const price = track.content.pricing.price || track.price?.price || 0;
-      if (price == 0 || track.isPaid) {
-        setIsPaid(true);
+    if (price == 0 || track.isPaid) {
+      setIsPaid(true);
+    }
+    if (!user || !user.userId || user.userId.length < 4) return;
+
+    await onGetPaidContent(track, user, setIsPaid);
+  };
+
+  const onPurchaseContent = async () => {
+    if (!(user && user.userId && user.userId.length > 5)) return router.push("/login");
+    setLoading(true);
+    setShowConfirmDialog(false);
+    await purchase(
+      user,
+      track,
+      async () => {
+        await onCheckIfContentIsPaid();
+        setLoading(false);
+      },
+      async () => {
+        await onCheckIfContentIsPaid();
+        setLoading(false);
       }
-      if (!user || !user.userId || user.userId.length < 4) return;
+    );
+  };
+
+  useEffect(() => {
+    onCheckIfContentIsPaid();
+  }, []);
+
+  const formatDuration = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+  };
   
-      await onGetPaidContent(track, user, setIsPaid);
-    };
-  
-    const onPurchaseContent = async () => {
-      if (!(user && user.userId && user.userId.length > 5)) return router.push("/login");
-      setLoading(true);
-      setShowConfirmDialog(false);
-      await purchase(
-        user,
-        track,
-        async () => {
-          await onCheckIfContentIsPaid();
-          setLoading(false);
-        },
-        async () => {
-          await onCheckIfContentIsPaid();
-          setLoading(false);
-        }
-      );
-    };
-  
-    useEffect(() => {
-      onCheckIfContentIsPaid();
-    }, []);
-  
-    const formatDuration = (seconds: number): string => {
-      const mins = Math.floor(seconds / 60);
-      const secs = Math.floor(seconds % 60);
-      return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
-    };
   const hasPrice = track.content.pricing?.price || track.price?.price;
 
   return (
-    <motion.div
-      whileHover={{ scale: 1.01 }}
-      whileTap={{ scale: 0.99 }}
-      className={`flex flex-wrap items-center p-3 w-full truncate rounded-lg transition-colors duration-200 group ${
-        isPlaying
-          ? 'bg-primary/20 border border-primary/30'
-          : 'hover:bg-muted/50'
-      } ${!isPaid && hasPrice ? 'border-l-4 border-l-amber-500' : ''}`}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => e.key === 'Enter' && (isPaid || !hasPrice) && onPlay()}
-      onClick={() => (isPaid || !hasPrice) && onPlay()}
-    >
-      <div className="w-8 text-center text-muted-foreground group-hover:text-foreground">
-        {isPlaying ? (
-          <motion.div
-            animate={{ scale: [1, 1.2, 1] }}
-            transition={{ duration: 1, repeat: Infinity }}
-          >
-            <Music className="h-4 w-4 mx-auto text-primary" />
-          </motion.div>
-        ) : (
-          index + 1
-        )}
-      </div>
-      <div className="flex-1 ml-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <p className={`font-medium w-[60%] truncate ${isPlaying ? 'text-primary' : 'text-foreground'}`}>
-            {track.content.title}
-          </p>
-          {!isPaid && hasPrice && (
-            <Badge variant="outline" className="h-5 px-1 text-xs bg-amber-500/20 text-amber-600 border-amber-500/30">
-              <Lock className="h-3 w-3 mr-1" /> Paid
-            </Badge>
-          )}
-          {isPaid && (
-            <Badge variant="outline" className="h-5 px-1 text-xs bg-green-500/20 text-green-600 border-green-500/30">
-              <Check className="h-3 w-3 mr-1" /> Owned
-            </Badge>
+    <>
+      <motion.div
+        whileHover={{ scale: 1.01 }}
+        whileTap={{ scale: 0.98 }}
+        className={`flex flex-wrap items-center p-3 w-full rounded-lg transition-colors duration-200 group ${
+          isPlaying
+            ? 'bg-primary/20 border border-primary/30'
+            : 'hover:bg-muted/50'
+        } ${!isPaid && hasPrice ? 'border-l-4 border-l-amber-500' : ''}`}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => e.key === 'Enter' && (isPaid || !hasPrice) && onPlay()}
+        onClick={() => (isPaid || !hasPrice) && onPlay()}
+      >
+        {/* Track number/playing indicator - always visible */}
+        <div className="w-8 min-w-[2rem] text-center text-muted-foreground group-hover:text-foreground">
+          {isPlaying ? (
+            <motion.div
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 1, repeat: Infinity }}
+            >
+              <Music className="h-4 w-4 mx-auto text-primary" />
+            </motion.div>
+          ) : (
+            index + 1
           )}
         </div>
-        <p className="text-sm text-muted-foreground">{artistName}</p>
-      </div>
-      <div className="text-sm text-muted-foreground">
-        {formatDuration(track.content.duration)}
-      </div>
-      {!isPaid && hasPrice ? (
-        <motion.div
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          <Button
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowConfirmDialog(true);
-            }}
-            variant="secondary"
-            size="sm"
-            className="ml-2 opacity-100 group-hover:opacity-100 transition-opacity"
-            aria-label={`Purchase ${track.content.title}`}
-          >
-           {loading ? <Loader className='animate-spin'/> : <div className='flex flex-row items-center'> <ShoppingCart className="h-3 w-3 mr-1" />
-            MK{hasPrice.toFixed(2)}</div>}
-          </Button>
-        </motion.div>
-      ) : (
-        <motion.div
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          <Button
-            onClick={onPlay}
-            variant="ghost"
-            size="icon"
-            className={`ml-2 ${isPlaying ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`}
-            aria-label={`Play ${track.content.title}`}
-          >
-            {isPlaying ? (
-              <Pause className="h-4 w-4" aria-hidden="true" />
-            ) : (
-              <Play className="h-4 w-4" aria-hidden="true" />
-            )}
 
-             
-          </Button>
-        </motion.div>
-      )}
+        {/* Track info - main content */}
+        <div className="flex-1 min-w-[60%] ml-2 sm:ml-4 py-1">
+          <div className="flex flex-wrap items-center gap-1 sm:gap-2">
+            <p className={`font-medium truncate ${isPlaying ? 'text-primary' : 'text-foreground'}`}>
+              {track.content.title}
+            </p>
+            {!isPaid && hasPrice && (
+              <Badge variant="outline" className="h-5 px-1 text-xs bg-amber-500/20 text-amber-600 border-amber-500/30">
+                <Lock className="h-3 w-3 mr-1" /> Paid
+              </Badge>
+            )}
+            {isPaid && (
+              <Badge variant="outline" className="h-5 px-1 text-xs bg-green-500/20 text-green-600 border-green-500/30">
+                <Check className="h-3 w-3 mr-1" /> Owned
+              </Badge>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-2 mt-1">
+            <p className="text-xs sm:text-sm text-muted-foreground truncate">{artistName}</p>
+            <span className="hidden xs:inline-block text-muted-foreground">•</span>
+            <p className="text-xs sm:text-sm text-muted-foreground xs:mt-0">
+              {formatDuration(track.content.duration)}
+            </p>
+          </div>
+        </div>
+
+        {/* Duration (hidden on small screens) */}
+        <div className="hidden sm:block text-sm text-muted-foreground mx-2 min-w-[3rem] text-right">
+          {formatDuration(track.content.duration)}
+        </div>
+
+        {/* Action buttons */}
+        <div className="ml-auto flex items-center">
+          {!isPaid && hasPrice ? (
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowConfirmDialog(true);
+                }}
+                variant="secondary"
+                size="sm"
+                className="h-8 px-2 sm:px-3 opacity-100 group-hover:opacity-100 transition-opacity"
+                aria-label={`Purchase ${track.content.title}`}
+              >
+                {loading ? (
+                  <Loader className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+                ) : (
+                  <div className="flex flex-row items-center text-xs sm:text-sm">
+                    <ShoppingCart className="h-3 w-3 mr-1" />
+                    MK{hasPrice.toFixed(2)}
+                  </div>
+                )}
+              </Button>
+            </motion.div>
+          ) : (
+            <motion.div
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <Button
+                onClick={onPlay}
+                variant="ghost"
+                size="icon"
+                className={`h-8 w-8 ml-2 ${isPlaying ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`}
+                aria-label={`Play ${track.content.title}`}
+              >
+                {isPlaying ? (
+                  <Pause className="h-4 w-4" aria-hidden="true" />
+                ) : (
+                  <Play className="h-4 w-4" aria-hidden="true" />
+                )}
+              </Button>
+            </motion.div>
+          )}
+        </div>
+      </motion.div>
+
+      {/* Purchase Dialog */}
       <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+        <DialogContent className="sm:max-w-md mx-4 rounded-lg">
+          <DialogHeader className="space-y-4">
+            <DialogTitle className="flex items-center gap-2 text-lg">
               <AlertCircle className="h-5 w-5 text-amber-500" />
               Confirm Purchase
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-base">
               Are you sure you want to purchase &ldquo;{track.content.title}&rdquo; by {artistName} for MK{price}?
             </DialogDescription>
           </DialogHeader>
@@ -851,29 +874,30 @@ function TrackRow({
                 alt={`${track.content.title} album cover`}
                 fill
                 className="object-cover"
+                sizes="64px"
               />
             </div>
-            <div className="flex-1">
-              <h4 className="font-medium text-sm">{track.content.title}</h4>
-              <p className="text-xs text-muted-foreground">{artistName}</p>
+            <div className="flex-1 min-w-0">
+              <h4 className="font-medium text-sm truncate">{track.content.title}</h4>
+              <p className="text-xs text-muted-foreground truncate">{artistName}</p>
               <p className="text-xs mt-1">{formatDuration(track.content.duration)}</p>
             </div>
-            <div className="font-semibold">MK{price}</div>
+            <div className="font-semibold whitespace-nowrap">MK{price}</div>
           </div>
 
-          <DialogFooter className="flex gap-2 sm:gap-0">
+          <DialogFooter className="flex flex-col sm:flex-row gap-2 mt-2">
             <Button
               type="button"
               variant="outline"
               onClick={() => setShowConfirmDialog(false)}
-              className="flex-1"
+              className="flex-1 h-11"
             >
               <X size={16} className="mr-2" /> Cancel
             </Button>
             <Button
               type="button"
               onClick={onPurchaseContent}
-              className="flex-1"
+              className="flex-1 h-11"
               disabled={loading}
             >
               {loading ? (
@@ -881,15 +905,14 @@ function TrackRow({
               ) : (
                 <Check size={16} className="mr-2" />
               )}
-              Confirm Purchase
+              Confirm
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </motion.div>
+    </>
   );
 }
-
 function AlbumRow({
   album,
   onClick,
