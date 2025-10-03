@@ -54,6 +54,7 @@ export const DragZone: React.FC<DragZoneProps> = ({ children,getRootProps,isDrag
         if (!meta) return;
         try {
             const contentFile = await handleGenerateContentFiled(file!, uri, type)
+            const _type = meta.type == "Movie"? ContentType.VIDEO : meta.type == "Series" ? ContentType.SERIES : ContentType.MOVIE
             const content1: Movie = {
                 contentId: "",
                 ownerId: user.userId,
@@ -61,7 +62,7 @@ export const DragZone: React.FC<DragZoneProps> = ({ children,getRootProps,isDrag
                 description: "",
                 releaseDate: new Date(),
                 genres: [],
-                type: ContentType.MOVIE,
+                type: _type,
                 license: {
                     licenseId: "",
                     type: LicenseType.STREAM_ONLY,
@@ -81,7 +82,8 @@ export const DragZone: React.FC<DragZoneProps> = ({ children,getRootProps,isDrag
                 cast: [],
                 duration: Number(contentFile.duration),
                 rating: "",
-                genre: "Soundtrack"
+                genre: "Soundtrack",
+                views: 0
             }
 
             const content2: Music = {
@@ -91,7 +93,7 @@ export const DragZone: React.FC<DragZoneProps> = ({ children,getRootProps,isDrag
                 description: "",
                 releaseDate: new Date(),
                 genres: [],
-                type: ContentType.MOVIE,
+                type: ContentType.MUSIC_TRACK,
                 license: {
                     licenseId: "",
                     type: LicenseType.STREAM_ONLY,

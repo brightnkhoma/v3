@@ -7,8 +7,9 @@ import { AudioPlayer } from "./components/audioPlayer";
 import { AppContext } from "./appContext";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AudioManager } from "./lib/local/redux/audioManager";
-import { AccountType, User } from "./lib/types";
+import { AccountType, MusicFolderItem, User } from "./lib/types";
 import ReduxProvider from "./components/redux/provider";
+import { VideoManager } from "./lib/local/redux/videoManager";
 
 
 // const ReduxProvider = dynamic(() => import("@/app/components/redux/provider"), {
@@ -37,7 +38,13 @@ export default function Wrapper({
     }
 
     const audioRef = useRef<HTMLAudioElement | null>(null)
+    const videoRef = useRef<HTMLVideoElement | null>(null)
     const audioManager = useMemo(()=> new AudioManager(audioRef,x,null),[])
+    const videoManager = useMemo(()=> new VideoManager(null,videoRef),[])
+    const [deletingFolder, setDeletingFolder] = useState<string[] | null>(null)
+    const [selectedMusicFolderItems,setSelectedMusicFolderItems] = useState<MusicFolderItem[]>([])
+    const [cut, setCut] = useState<MusicFolderItem[]>([])
+    const [isPasting, setIsPasting] = useState<boolean>(false)
 
   
 
@@ -51,7 +58,7 @@ export default function Wrapper({
     
     return(
         <ReduxProvider >
-           <AppContext value={{audioManager : audioManager}}>
+           <AppContext value={{videoManager,audioManager, global : {deletingFolder,setDeletingFolder,selectedMusicFolderItems,setSelectedMusicFolderItems,cut,setCut,isPasting,setIsPasting}}}>
 
             <NavigationBar/>
 

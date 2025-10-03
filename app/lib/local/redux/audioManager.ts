@@ -38,6 +38,8 @@ export class AudioManager {
         this.onTimeUpdate = this.onTimeUpdate.bind(this)
         this.togglePlayOrder = this.togglePlayOrder.bind(this)
         this.onPlayNext = this.onPlayNext.bind(this)
+        this.onChangeVolume = this.onChangeVolume.bind(this)
+        this.togleMute = this.togleMute.bind(this)
 
         this.album = []
         this.albumCopy = []
@@ -97,12 +99,43 @@ export class AudioManager {
             this.updateUi();
             }
 
+            togleMute(){
+                const target = this.audioRef.current
+                if(target){
+                    if(target.muted){
+                        target.muted = false
+                    }else{
+                        target.muted = true
+                    }
+                }
+                if(this.updateUi)
+                    this.updateUi()
+                if(this._updateUi)
+                    this._updateUi()
+            }
+
 
         resetShuffle(){
             this.albumCopy = [...this.album]
             if(this.updateUi)
             this.updateUi()
         }
+
+            onChangeVolume (volume : number){
+               try {
+            if(this.audioRef.current){
+                this.audioRef.current.volume = volume/100
+            }
+        } catch (error) {
+            console.log(error);
+            
+        }finally{
+            if(this.updateUi)
+            this.updateUi()
+        if(this._updateUi)
+            this._updateUi()
+        }
+    }
 
         
         async next() {
@@ -324,8 +357,17 @@ export class AudioManager {
         // }
         
  async getFile (myItem : MusicFolderItem){
-    const file =  await getFileContent(myItem,this.user)
-    return file
+    try {
+        this.isMusicLoading = myItem.content.contentId
+        const file =  await getFileContent(myItem,this.user)
+        return file
+        
+    } catch (error) {
+        console.log(error);
+         this.isMusicLoading = null
+        
+         return null
+    }
  }
 
   async onGetLikeCount (){

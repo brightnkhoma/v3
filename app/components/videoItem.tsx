@@ -4,6 +4,8 @@ import { useAppDispatch } from "../lib/local/redux/store"
 import { setMeta } from "../lib/local/redux/reduxSclice"
 import { Play, MoreHorizontal, ListMusic, Grid3x3, X } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useContext, useEffect } from "react"
+import { AppContext } from "../appContext"
 
 type ViewMode = "grid" | "list"
 
@@ -24,25 +26,46 @@ export const MusicItem: React.FC<MusicItemProps> = ({
 }) => {
   const { content, folderPoster } = item
   const dispatch = useAppDispatch()
+  const {global} = useContext(AppContext)!
+  const {selectedMusicFolderItems,setSelectedMusicFolderItems,deletingFolder} = global
   
-  const isActive = meta?.content.contentId === item.content.contentId
+  const isActive = selectedMusicFolderItems.find(x=> x.content.contentId == item.content.contentId)
   const thumbnailSrc = (content.thumbnail && content.thumbnail.length > 5) 
     ? content.thumbnail 
     : (folderPoster || "/images/default.png")
 
+    const handleClick = ( event: React.MouseEvent<HTMLDivElement>)=>{
+      dispatch(setMeta(item))
+      if(event.ctrlKey){
+         if(selectedMusicFolderItems.find(x=>x.content.contentId == item.content.contentId)){
+        setSelectedMusicFolderItems(selectedMusicFolderItems.filter(x=>x.content.contentId != item.content.contentId))
+        
+        return;
+      }
+        setSelectedMusicFolderItems([...selectedMusicFolderItems,item])
+      }else{
+         if(selectedMusicFolderItems.find(x=>x.content.contentId == item.content.contentId)){
+        setSelectedMusicFolderItems([])
+        return;
+      }
+        setSelectedMusicFolderItems([item])
+      }
+    }
+
+   
+
   return (
     <div 
-      onClick={() => dispatch(setMeta(item))}
+      onClick={handleClick }
+      
       onDoubleClick={async ()=> await onClick(item)}
       className={cn(
-        "max-h-[12rem] h-max group transition-all cursor-pointer",
+        "max-h-[12rem] h-max group transition-all cursor-pointer relative",
         "hover:bg-gray-100 dark:hover:bg-gray-800",
         "focus:outline-none focus:ring-1 focus:ring-blue-500 focus:ring-opacity-50",
         isActive ? "bg-blue-100 dark:bg-blue-900" : "bg-white dark:bg-gray-700",
         {
-          // Grid View Styles
           "flex flex-col gap-1 p-2 rounded-lg w-[120px] min-w-[120px] sm:w-[140px] sm:min-w-[140px]": viewMode === "grid",
-          // List View Styles
           "flex flex-row items-center gap-3 p-2 rounded-lg w-full": viewMode === "list",
         },
         className
@@ -51,7 +74,6 @@ export const MusicItem: React.FC<MusicItemProps> = ({
       tabIndex={0}
       aria-label={`Select ${content.title}`}
     >
-      {/* Thumbnail Container */}
       <div className={cn(
         "relative overflow-hidden shadow-sm",
         {
@@ -70,7 +92,6 @@ export const MusicItem: React.FC<MusicItemProps> = ({
           priority={false}
         />
         
-        {/* Play button overlay */}
         <div className={cn(
           "absolute inset-0 flex items-center justify-center",
           "transition-all duration-200",
@@ -91,7 +112,6 @@ export const MusicItem: React.FC<MusicItemProps> = ({
         </div>
       </div>
       
-      {/* Text Content */}
       <div className={cn(
         "flex flex-col min-w-0",
         {
@@ -124,7 +144,6 @@ export const MusicItem: React.FC<MusicItemProps> = ({
         )}
       </div>
       
-      {/* Context menu button */}
       <button 
         className={cn(
           "rounded-full transition-opacity",
@@ -137,7 +156,6 @@ export const MusicItem: React.FC<MusicItemProps> = ({
         )}
         onClick={(e) => {
           e.stopPropagation()
-          // Handle context menu click
         }}
         aria-label="More options"
       >
@@ -148,11 +166,11 @@ export const MusicItem: React.FC<MusicItemProps> = ({
           }
         )} />
       </button>
+     { (deletingFolder || []).includes(item.content.contentId) && <div className="absolute rounded-lg inset-0 bg-red-600/40 z-50 animate-caret-blink"></div>}
     </div>
   )
 }
 
-// Helper function to format duration
 function formatDuration(seconds: number): string {
   const mins = Math.floor(seconds / 60)
   const secs = Math.floor(seconds % 60)

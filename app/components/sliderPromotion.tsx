@@ -244,7 +244,7 @@ export const SliderPromotion: React.FC<SliderPromotionProps> = ({
 
 // Multiple Sliders Container Component
 export const SliderPromotionContainer: React.FC<{ groups: PromotionGroup[] }> = ({ groups }) => {
-  const sliderGroups = groups.filter(group => group.type === 'SLIDER');
+  const sliderGroups = groups.filter(group => group.type === 'Slider');
 
   if (sliderGroups.length === 0) {
     return null;

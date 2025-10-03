@@ -16,6 +16,9 @@ import { setFolder } from "../lib/local/redux/reduxSclice"
 import { RootState, useAppDispatch, useAppSelector } from "../lib/local/redux/store"
 import { usePathname } from "next/navigation"
 import { DropzoneInputProps, useDropzone } from "react-dropzone"
+import { PasteButton } from "./ui/pasteButton"
+import { PromoteButton } from "./ui/promoteButton"
+import { VideoPromotionButton } from "./videoPromoteButton"
 
 export interface PathNameProps {
     name : string
@@ -39,6 +42,7 @@ export const StudioTopBar : React.FC<StudioTopBarProps>= ({audioInputRef,videoIn
          <div className="flex flex-row items-center sticky top-0 gap-4 max-w-screen overflow-auto">
             <NewDropDownMenu audioInputRef={audioInputRef} videoInputRef={videoInputRef} pathName={pathName || ""} onCreateDefaultFolder={onCreateDefaultFolder}/>
             <div className="h-5 bg-gray-500 w-[1px]"></div>
+            <PasteButton name={pathName || ""}/>
             <CutButton name={pathName || ""}/>
             <CopyButton  name={pathName || ""}/>
             <RenameButton/>
@@ -46,6 +50,8 @@ export const StudioTopBar : React.FC<StudioTopBarProps>= ({audioInputRef,videoIn
             <DeleteButtton/>
             <SortMenuButton/>
             <ViewButton/>
+            <PromoteButton/>
+            <VideoPromotionButton/>
             <div className="flex-1"></div>
             <DetailsButton/>
         </div>

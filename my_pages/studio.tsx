@@ -2,9 +2,10 @@
 
 import { FolderCollection } from "@/app/components/folderCollection"
 import { ContentFolderProps } from "@/app/components/ui/folder"
-import { getFolders } from "@/app/lib/dataSource/contentDataSource"
+import { getFolders, listenToFolderChanges } from "@/app/lib/dataSource/contentDataSource"
 import { RootState, useAppSelector } from "@/app/lib/local/redux/store"
-import { Folder, MusicFolderType, VideoFolderType } from "@/app/lib/types"
+import { Folder, MusicFolderItem, MusicFolderType, VideoFolderItem, VideoFolderType } from "@/app/lib/types"
+import { DocumentChangeType } from "firebase/firestore"
 import { useEffect, useState } from "react"
 
 const Studio = ()=>{
@@ -17,8 +18,25 @@ const Studio = ()=>{
        setFolders(userFolders)
     }
 
+    const onListenToFolderChanges = async()=>{
+        await listenToFolderChanges(user,onResult)
+    }
+
+    const onResult = (type : DocumentChangeType,x : VideoFolderItem | MusicFolderItem)=>{
+        const item : ContentFolderProps = {id : x.folderId,name : x.folderName,type : x.type, data : x} as ContentFolderProps
+
+
+        switch(type){
+            case "added": setFolders(prev=>([...(prev.filter(y=> y.id != x.folderId)),item]));break;
+            case "removed": setFolders(prev=>(prev.filter(y=> y.id != x.folderId)));break;
+            case "modified":setFolders(prev => (prev.map(y=> y.id == x.folderId ? item : y)))
+        }
+    }
+
+
     useEffect(()=>{
         onGetFolders()
+        onListenToFolderChanges()
     },[user])
 
 

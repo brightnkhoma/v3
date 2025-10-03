@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import { User, LogOut, LogIn, Wallet, PlusCircle, ChevronDown,RefreshCcw } from "lucide-react"
 import Link from "next/link"
 import { RootState, useAppSelector } from "@/app/lib/local/redux/store"
-import { onListenToBalanceChanges,refreshBalance } from "@/app/lib/dataSource/contentDataSource"
+import { onListenToBalanceChanges,refreshBalance,getBalance } from "@/app/lib/dataSource/contentDataSource"
 import { UserWallet } from "@/app/lib/types"
 import { useRouter } from "next/navigation"
 
@@ -28,6 +28,13 @@ export const ProfileBar = () => {
     setBalance(data.balance || balance)
 
   }
+
+  const onGetBalance = async()=>{
+    const _balance = await getBalance(user.userId)
+    if(_balance){
+      setBalance(_balance.balance)
+    }
+  }
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -47,6 +54,7 @@ export const ProfileBar = () => {
   }
 
   useEffect(()=>{
+    onGetBalance()
     onListenTOBalance()
     onRefreshBalance()
   },[user])

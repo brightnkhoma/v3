@@ -55,7 +55,7 @@ export default function MusicPage() {
   const onGetAlbum = async () => {
     if (id) {
       const x: User = { userId: id.id as string } as User;
-      const data = await getFolders(x) as MusicFolderItem[];
+      const data = await getFolders(x,"audio") as MusicFolderItem[];
       setAlbums(data);
     }
     setLoading(false);
@@ -69,7 +69,6 @@ export default function MusicPage() {
   }, [id]);
 
   useEffect(() => {
-    // Update current track index when the playing item changes
     if (audioManager.item && tracks.length > 0) {
       const index = tracks.findIndex(track => track.folderId === audioManager.item?.folderId);
       setCurrentTrackIndex(index);
@@ -606,6 +605,7 @@ export default function MusicPage() {
                             transition={{ delay: 0.3 + index * 0.05 }}
                           >
                             <TrackRow
+                            isLoading = {track.content.contentId == audioManager.isMusicLoading}
                             user={user}
                               track={track}
                               index={index}
@@ -688,7 +688,8 @@ function TrackRow({
   isPlaying,
   onPlay,
   onPurchase,
-  user
+  user,
+  isLoading
 }: {
   track: MusicFolderItem;
   index: number;
@@ -696,7 +697,8 @@ function TrackRow({
   isPlaying: boolean;
   onPlay: () => void;
   onPurchase: () => void;
-  user: User
+  user: User,
+  isLoading : boolean
 }) {
   const [isPaid, setIsPaid] = useState<boolean>(track.isPaid || false);
   const [loading, setLoading] = useState<boolean>(false);
@@ -761,7 +763,7 @@ function TrackRow({
       >
         {/* Track number/playing indicator - always visible */}
         <div className="w-8 min-w-[2rem] text-center text-muted-foreground group-hover:text-foreground">
-          {isPlaying ? (
+          {isPlaying && !isLoading  ? (
             <motion.div
               animate={{ scale: [1, 1.2, 1] }}
               transition={{ duration: 1, repeat: Infinity }}
@@ -803,6 +805,13 @@ function TrackRow({
         <div className="hidden sm:block text-sm text-muted-foreground mx-2 min-w-[3rem] text-right">
           {formatDuration(track.content.duration)}
         </div>
+        <div className={`transition-opacity mb-2 duration-300 ${isLoading ? 'opacity-100' : 'opacity-0'}`}>
+                  <Loader2 
+                    className="animate-spin text-blue-500" 
+                    aria-label="Loading"
+                    size={20}
+                  />
+                </div> 
 
         {/* Action buttons */}
         <div className="ml-auto flex items-center">
@@ -843,13 +852,16 @@ function TrackRow({
                 className={`h-8 w-8 ml-2 ${isPlaying ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`}
                 aria-label={`Play ${track.content.title}`}
               >
-                {isPlaying ? (
+             {!isLoading &&   <div>
+                  {isPlaying ? (
                   <Pause className="h-4 w-4" aria-hidden="true" />
                 ) : (
                   <Play className="h-4 w-4" aria-hidden="true" />
                 )}
+                </div>}
               </Button>
-            </motion.div>
+                       
+                 </motion.div>
           )}
         </div>
       </motion.div>
@@ -900,7 +912,7 @@ function TrackRow({
               className="flex-1 h-11"
               disabled={loading}
             >
-              {loading ? (
+              {isLoading ? (
                 <Loader2 size={16} className="mr-2 animate-spin" />
               ) : (
                 <Check size={16} className="mr-2" />

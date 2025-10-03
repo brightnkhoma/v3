@@ -50,10 +50,10 @@ const initialState = {
 export const AudioPlayer = () => {
   const [isMinimized, setIsMinimized] = useState<boolean>(true)
   const {audioManager} = useContext(AppContext)!
-  const {albumCopy,audioRef,currentTime,duration,init,next,item : currentPlayinMusic,isPlaying,progress,prev,togglePlayOrder,togglePlayPause} = audioManager
+  const {albumCopy,audioRef,currentTime,duration,init,next,item : currentPlayinMusic,isPlaying,progress,prev,togglePlayOrder,togglePlayPause,onChangeVolume,togleMute} = audioManager
   const [isFloatingHovered, setIsFloatingHovered] = useState<boolean>(false)
-  const [volume, setVolume] = useState(0.7);
-  const [isMuted, setIsMuted] = useState(false);
+  const volume = audioRef.current?.volume || 0.1
+  const isMuted = audioRef.current?.muted ? true : false
   const [showOptions, setShowOptions] = useState(false);
   const playOrder = audioManager.playOrder
   const {user,audioFile} = useAppSelector((state : RootState)=> state.auth)
@@ -74,14 +74,14 @@ export const AudioPlayer = () => {
 
   }
     const handleVolumeChange = useCallback((value: number[]) => {
-    const newVolume = value[0];
-    setVolume(newVolume);
-    setIsMuted(newVolume === 0);
+    const newVolume = value[0]*100;
+    onChangeVolume(newVolume)
+    
   }, []);
 
 
   const toggleMute = useCallback(() => {
-    setIsMuted(prev => !prev);
+    togleMute()
   }, []);
 
  
@@ -345,7 +345,7 @@ export const AudioPlayer = () => {
                                             <ListMusic size={16} />
                                         </Button>
                                     </TooltipTrigger>
-                                    <TooltipContent>Add to playlist</TooltipContent>
+                                    <TooltipContent>like</TooltipContent>
                                 </Tooltip>
                             </div>
                             

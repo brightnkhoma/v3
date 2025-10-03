@@ -38,14 +38,14 @@ interface MusicItemProps {
 
 const MusicItem: React.FC<MusicItemProps> = ({ item, isArtist = false,isLoading }) => {
   const x = item;
-  const id = x.content.contentId;
-  const thumNail = x.content.thumbnail || x.folderPoster;
-  const title = x.content.title;
-  const listens = x.content.listens || 0;
+  const id = x.content?.contentId;
+  const thumNail = x.content?.thumbnail || x.folderPoster;
+  const title = x.content?.title;
+  const listens = x.content?.listens || 0;
   const albumName = x.folderName;
-  const artist = x.content.artists?.[0] || x.artistName || x.owner?.name || 'Unknown Artist';
+  const artist = x.content?.artists?.[0] || x.artistName || x.owner?.name || 'Unknown Artist';
   const [likes, setLikes] = useState<string>("...");
-  const price = x.content.pricing?.price || x.price?.price || 0;
+  const price = x.content?.pricing?.price || x.price?.price || 0;
   const isPaid = x.isPaid;
 
   const onGetLikeCount = async () => {
@@ -173,14 +173,14 @@ const MusicItem: React.FC<MusicItemProps> = ({ item, isArtist = false,isLoading 
 
 const CustomMusicItem: React.FC<{ item: MusicFolderItem, isMusicLoading : boolean }> = ({ item,isMusicLoading}) => {
   const x = item;
-  const id = x.content.contentId;
-  const thumNail = x.content.thumbnail || x.folderPoster;
-  const title = x.content.title;
-  const listens = x.content.listens || 0;
+  const id = x.content?.contentId;
+  const thumNail = x.content?.thumbnail || x.folderPoster;
+  const title = x.content?.title;
+  const listens = x.content?.listens || 0;
   const albumName = x.folderName;
-  const artist = x.content.artists?.[0] || x.artistName || x.owner?.name || 'Unknown Artist';
+  const artist = x.content?.artists?.[0] || x.artistName || x.owner?.name || 'Unknown Artist';
   const [likes, setLikes] = useState<string>("...");
-  const price = x.content.pricing?.price || x.price?.price || 0;
+  const price = x.content?.pricing?.price || x.price?.price || 0;
   const isPaid = x.isPaid;
 
   const onGetLikeCount = async () => {
@@ -385,14 +385,13 @@ export const PromotionGroupRow: React.FC<PromotionGroupRowProps> = ({
 
   const renderRowContent = () => {
     switch (group.type) {
-      case 'ROW_ITEM':
+      case "Row":
         return renderHomepageRow();
-      case 'ARTIST_ROW':
+      case 'Artist':
         return renderArtistRow();
-      case 'CUSTOM_GROUP':
+        default:
         return renderCustomGroupRow();
-      default:
-        return renderDefaultRow();
+        // return renderDefaultRow();
     }
   };
 
@@ -406,8 +405,8 @@ export const PromotionGroupRow: React.FC<PromotionGroupRowProps> = ({
       </div>
       <Swiper {...swiperConfig}>
         {group.items.slice(0, 12).map((item, index) => (
-          <SwiperSlide key={`${item.content.contentId}-${index}`} className="!w-auto">
-            <MusicItem isLoading = {item.content.contentId ==  isMusicLoading} item={item} />
+          <SwiperSlide key={`${item.content?.contentId}-${index}`} className="!w-auto">
+            <MusicItem isLoading = {item.content?.contentId ==  isMusicLoading} item={item} />
           </SwiperSlide>
         ))}
       </Swiper>
@@ -424,8 +423,8 @@ export const PromotionGroupRow: React.FC<PromotionGroupRowProps> = ({
       </div>
       <Swiper {...artistSwiperConfig}>
         {group.items.slice(0, 12).map((item, index) => (
-          <SwiperSlide key={`${item.content.contentId}-${index}`} className="!w-auto">
-            <MusicItem isLoading = {item.content.contentId ==  isMusicLoading} item={item} isArtist={true} />
+          <SwiperSlide key={`${item.content?.contentId}-${index}`} className="!w-auto">
+            <MusicItem isLoading = {(item.content?.contentId )==  isMusicLoading} item={item} isArtist={true} />
           </SwiperSlide>
         ))}
       </Swiper>
@@ -447,8 +446,8 @@ export const PromotionGroupRow: React.FC<PromotionGroupRowProps> = ({
       </div>
       <Swiper {...customSwiperConfig}>
         {group.items.map((item, index) => (
-          <SwiperSlide key={`${item.content.contentId}-${index}`} className="!w-auto">
-            <CustomMusicItem isMusicLoading={isMusicLoading == item.content.contentId} item={item} />
+          <SwiperSlide key={`${item.content?.contentId}-${index}`} className="!w-auto">
+            <CustomMusicItem isMusicLoading={isMusicLoading == item.content?.contentId} item={item} />
           </SwiperSlide>
         ))}
       </Swiper>
@@ -460,8 +459,8 @@ export const PromotionGroupRow: React.FC<PromotionGroupRowProps> = ({
       <h2 className="text-2xl font-bold text-foreground">{group.name}</h2>
       <Swiper {...swiperConfig}>
         {group.items.slice(0, 8).map((item, index) => (
-          <SwiperSlide key={`${item.content.contentId}-${index}`} className="!w-auto">
-            <MusicItem isLoading = {item.content.contentId ==  isMusicLoading} item={item} />
+          <SwiperSlide key={`${item.content?.contentId}-${index}`} className="!w-auto">
+            <MusicItem isLoading = {item.content?.contentId ==  isMusicLoading} item={item} />
           </SwiperSlide>
         ))}
       </Swiper>

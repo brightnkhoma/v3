@@ -12,6 +12,8 @@ export enum ContentType {
   MUSIC_TRACK = "MUSIC_TRACK",
   MUSIC_ALBUM = "MUSIC_ALBUM",
   PODCAST = "PODCAST",
+  SERIES = "SERIES",
+  VIDEO = "VIDEO"
 
 }
 
@@ -39,6 +41,7 @@ export interface User {
   accountType: AccountType;
   paymentMethods: PaymentMethod[];
   library: Library;
+  avatar ? : string
 }
 
 export interface Content {
@@ -62,6 +65,7 @@ export interface Content {
 }
 
 export interface Movie extends Content {
+  views: number | undefined;
   director: string;
   cast: string[];
   duration: number; // in seconds
@@ -297,11 +301,12 @@ export interface FilteredContent{
 
 
 // Types based on the provided interfaces
-export enum PromotionType {
+export enum MyPromotionType {
   SLIDER = "SLIDER",
   ROW_ITEM = "ROW_ITEM",
   ARTIST_ROW = "ARTIST_ROW",
-  CUSTOM_GROUP = "CUSTOM_GROUP"
+  CUSTOM_GROUP = "CUSTOM_GROUP",
+  ALBUM = "ALBUM"
 }
 
 export enum PromotionStatus {
@@ -390,82 +395,82 @@ export interface PromotionSummary {
 }
 
 
-export const getDefaultPromotionSummary = (): PromotionSummary => {
-  const now = new Date();
-  const thirtyDaysFromNow = new Date();
-  thirtyDaysFromNow.setDate(now.getDate() + 30);
+// export const getDefaultPromotionSummary = (): PromotionSummary => {
+//   const now = new Date();
+//   const thirtyDaysFromNow = new Date();
+//   thirtyDaysFromNow.setDate(now.getDate() + 30);
   
-  return {
-    totalPromotions: 0,
-    activePromotions: 0,
-    scheduledPromotions: 0,
-    expiredPromotions: 0,
-    frozenPromotions: 0,
+//   return {
+//     totalPromotions: 0,
+//     activePromotions: 0,
+//     scheduledPromotions: 0,
+//     expiredPromotions: 0,
+//     frozenPromotions: 0,
     
-    existingPromotionGroups: [],
-    promotionsByGroup: [],
+//     existingPromotionGroups: [],
+//     promotionsByGroup: [],
     
-    promotionsByType: [
-      { type: PromotionType.SLIDER, count: 0, activeCount: 0 },
-      { type: PromotionType.ROW_ITEM, count: 0, activeCount: 0 },
-      { type: PromotionType.ARTIST_ROW, count: 0, activeCount: 0 },
-      { type: PromotionType.CUSTOM_GROUP, count: 0, activeCount: 0 }
-    ],
+//     promotionsByType: [
+//       { type: PromotionType.SLIDER, count: 0, activeCount: 0 },
+//       { type: PromotionType.ROW_ITEM, count: 0, activeCount: 0 },
+//       { type: PromotionType.ARTIST_ROW, count: 0, activeCount: 0 },
+//       { type: PromotionType.CUSTOM_GROUP, count: 0, activeCount: 0 }
+//     ],
     
-    upcomingExpirations: [],
-    recentlyAdded: [],
+//     upcomingExpirations: [],
+//     recentlyAdded: [],
     
-    performanceMetrics: {
-      totalImpressions: 0,
-      averageClickThroughRate: 0,
-      bestPerformingPromotion: {
-        id: "",
-        name: "",
-        clickThroughRate: 0
-      }
-    },
+//     performanceMetrics: {
+//       totalImpressions: 0,
+//       averageClickThroughRate: 0,
+//       bestPerformingPromotion: {
+//         id: "",
+//         name: "",
+//         clickThroughRate: 0
+//       }
+//     },
     
-    highPriorityPromotions: 0,
-    mediumPriorityPromotions: 0,
-    lowPriorityPromotions: 0,
+//     highPriorityPromotions: 0,
+//     mediumPriorityPromotions: 0,
+//     lowPriorityPromotions: 0,
     
-    promotionsByContentType: [
-      { contentType: 'Album', count: 0 },
-      { contentType: 'Playlist', count: 0 },
-      { contentType: 'Track', count: 0 },
-      { contentType: 'Artist', count: 0 }
-    ],
+//     promotionsByContentType: [
+//       { contentType: 'Album', count: 0 },
+//       { contentType: 'Playlist', count: 0 },
+//       { contentType: 'Track', count: 0 },
+//       { contentType: 'Artist', count: 0 }
+//     ],
     
-    dateRange: {
-      earliestStart: now,
-      latestEnd: thirtyDaysFromNow
-    }
-  };
-};
+//     dateRange: {
+//       earliestStart: now,
+//       latestEnd: thirtyDaysFromNow
+//     }
+//   };
+// };
 
-export const getDefaultDetailedPromotionSummary = (): DetailedPromotionSummary => {
-  const baseSummary = getDefaultPromotionSummary();
+// export const getDefaultDetailedPromotionSummary = (): DetailedPromotionSummary => {
+//   const baseSummary = getDefaultPromotionSummary();
   
-  return {
-    ...baseSummary,
+//   return {
+//     ...baseSummary,
     
-    promotionsByGenre: [],
+//     promotionsByGenre: [],
     
-    promotionsByOwner: [],
+//     promotionsByOwner: [],
     
-    averagePromotionDuration: 0,
-    shortestActivePromotion: 0,
-    longestActivePromotion: 0,
+//     averagePromotionDuration: 0,
+//     shortestActivePromotion: 0,
+//     longestActivePromotion: 0,
     
-    recentlyModified: [],
+//     recentlyModified: [],
     
-    conversionMetrics: {
-      totalConversions: 0,
-      conversionRate: 0,
-      revenueGenerated: 0
-    }
-  };
-};
+//     conversionMetrics: {
+//       totalConversions: 0,
+//       conversionRate: 0,
+//       revenueGenerated: 0
+//     }
+//   };
+// };
 export interface DetailedPromotionSummary extends PromotionSummary {
   promotionsByGenre: {
     genre: string;
@@ -501,4 +506,210 @@ export  interface PromotionGroup {
   name: string;
   type: PromotionType;
   groupName?: string;
+}
+
+
+
+export interface PromotionSlotBase {
+  type: MyPromotionType;
+  title: string;
+  description: string;
+  price: number;
+  duration: string;
+  features: string[];
+  groupName: string;
+  availableSlots: number;
+  totalSlots: number;
+}
+
+export interface SliderPromotion extends PromotionSlotBase {
+  type: MyPromotionType.SLIDER;
+  id : string
+}
+
+export interface RowPromotion extends PromotionSlotBase {
+  type: MyPromotionType.ROW_ITEM;
+  rows: MusicRow[];
+}
+
+export interface ArtistPromotion extends PromotionSlotBase {
+  type: MyPromotionType.ARTIST_ROW;
+}
+
+export interface AlbumPromotion extends PromotionSlotBase {
+  type: MyPromotionType.ALBUM
+}
+
+export type PromotionType = 'Slider' | 'Row' | 'Artist' | 'Album';
+export type PromotionSlot = SliderPromotion | RowPromotion | ArtistPromotion | AlbumPromotion;
+
+export interface MusicRow {
+  id: string;
+  name: string;
+  price: number;
+  availableSlots: number;
+  totalSlots: number;
+  duration: string;
+  description?: string;
+  features?: string[];
+}
+
+export interface Artist {
+  id: string;
+  name: string;
+  songs: string[];
+  albums: string[];
+  avatar?: string;
+  bio?: string;
+  genres?: string[];
+}
+
+export interface UserContent {
+  song: string;
+  artist: string;
+  album: string;
+  duration: string;
+}
+
+export interface PromotionSlotProps {
+  type: PromotionType;
+  title: string;
+  description: string;
+  price: number;
+  duration: string;
+  features: string[];
+  groupName: string;
+  availableSlots: number;
+  totalSlots: number;
+  rows?: MusicRow[];
+  isSelected: boolean;
+  onSelect: () => void;
+}
+
+export interface RowPromotionSlotProps {
+  id: string;
+  name: string;
+  price: number;
+  availableSlots: number;
+  totalSlots: number;
+  duration: string;
+  isSelected: boolean;
+  onSelect: () => void;
+  description?: string;
+  features?: string[];
+}
+
+export interface PurchaseDialogProps {
+  selectedSlot: string;
+  selectedRow: MusicRow | null;
+  userContent: UserContent;
+  setUserContent: (content: UserContent) => void;
+  onPurchase: () => void;
+  onCancel: () => void;
+  artist: Artist;
+}
+
+export interface ApiResponse<T> {
+  data: T;
+  message: string;
+  success: boolean;
+}
+
+export interface PromotionPurchaseRequest {
+  promotionType: PromotionType;
+  rowId?: string;
+  content: UserContent;
+  artistId: string;
+  duration: string;
+}
+
+export interface PromotionPurchaseResponse {
+  purchaseId: string;
+  promotionType: PromotionType;
+  rowName?: string;
+  price: number;
+  startDate: string;
+  endDate: string;
+  status: 'active' | 'pending' | 'expired';
+}
+
+export interface PromotionFormData {
+  promotionType: PromotionType;
+  rowId?: string;
+  songId?: string;
+  albumId?: string;
+  duration: string;
+  agreeToTerms: boolean;
+}
+
+export interface Toast {
+  id: string;
+  title: string;
+  description: string;
+  variant: 'default' | 'destructive' | 'success';
+}
+
+export interface PromotionFilters {
+  type?: PromotionType;
+  minPrice?: number;
+  maxPrice?: number;
+  availableOnly: boolean;
+}
+
+export interface MockPromotionData {
+  slider: SliderPromotion;
+  rows: MusicRow[];
+  artist: ArtistPromotion;
+  album: AlbumPromotion;
+}
+
+
+
+
+
+export interface VideoPromotionAdvert{
+  price : number;
+  per :  "Day" ,
+  availableSlots : number;
+  totalSlots : number;
+  slots : VideoPromotionSlot[]
+}
+
+export interface VideoFolderPromotion {
+  id: string;
+  item: VideoFolderItem;
+  startDate: Date;
+  endDate: Date;
+  durationCount: number;
+  durationUnit: 'days' | 'weeks' | 'months';
+  amountPaid?: number;
+  status: 'active' | 'pending' | 'expired' | 'cancelled';
+  promotionType: 'featured' | 'spotlight' | 'trending' | 'premium';
+  priority: number;
+  impressions: number;
+  clicks: number;
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+  slotId : string
+}
+
+export interface VideoPromotionSlot {
+  id: string;
+  type: 'featured' | 'spotlight' | 'trending' | 'premium';
+  title: string;
+  description: string;
+  price: number;
+  duration: number;
+  durationUnit: 'days' | 'weeks' | 'months';
+  features: string[];
+  availableSlots: number;
+  totalSlots: number;
+  position: string;
+  visibility: 'high' | 'medium' | 'low';
+}
+
+export interface VideoFolderCollection{
+  item : VideoFolderItem,
+  count : number,
 }
