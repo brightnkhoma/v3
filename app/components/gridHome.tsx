@@ -40,7 +40,7 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="min-h-screen cbg-gray-50 p-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4">
         {videos.map((video, i) => (
           <VideoComponent
             key={i}
@@ -52,7 +52,7 @@ const HomePage: React.FC = () => {
     loading && (
     <div className="min-h-screen w-full cbg-gray-50 p-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {Array.from({length : 50}).map((_, i) => (
+        {Array.from({length : 30}).map((_, i) => (
           <SkeletonCard
             key={i}
               />

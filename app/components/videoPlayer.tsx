@@ -72,13 +72,12 @@ export const VideoPlayer = ({ className = "" }: VideoPlayerProps) => {
     setShowControls(true);
     setIsHovering(true);
     
-    // Hide controls after 3 seconds of inactivity
     if (controlsTimeoutRef.current) {
       clearTimeout(controlsTimeoutRef.current);
     }
     
     controlsTimeoutRef.current = setTimeout(() => {
-      if (!isHovering && isPlaying) {
+      if (isPlaying) {
         setShowControls(false);
       }
     }, 3000);
@@ -98,10 +97,8 @@ export const VideoPlayer = ({ className = "" }: VideoPlayerProps) => {
     }
   };
 
-  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Only handle shortcuts when video is focused or in fullscreen
       if (!containerRef.current?.contains(document.activeElement) && !document.fullscreenElement) {
         return;
       }
@@ -165,11 +162,9 @@ export const VideoPlayer = ({ className = "" }: VideoPlayerProps) => {
     };
   }, [isPlaying, isMuted, showPlaylist]);
 
-  // Fullscreen change listener
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
-      // Show controls when entering/exiting fullscreen
       setShowControls(true);
     };
 
@@ -180,7 +175,6 @@ export const VideoPlayer = ({ className = "" }: VideoPlayerProps) => {
     };
   }, []);
 
-  // Video event listeners
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -205,7 +199,6 @@ export const VideoPlayer = ({ className = "" }: VideoPlayerProps) => {
 
   const handleVideoClick = () => {
     handlePlayPause();
-    // Show controls briefly when clicking video
     setShowControls(true);
     if (controlsTimeoutRef.current) {
       clearTimeout(controlsTimeoutRef.current);
@@ -309,7 +302,7 @@ export const VideoPlayer = ({ className = "" }: VideoPlayerProps) => {
       </div>
 
       {/* Quick Actions Bar (shown when controls are hidden) */}
-      {!showControls && isPlaying && (
+      {/* {!showControls && isPlaying && (
         <div className="absolute inset-0 flex items-center justify-between px-4 opacity-0 hover:opacity-100 transition-opacity duration-300">
           <button
             onClick={() => {
@@ -332,7 +325,7 @@ export const VideoPlayer = ({ className = "" }: VideoPlayerProps) => {
             <span className="text-white font-bold text-sm">+10s</span>
           </button>
         </div>
-      )}
+      )} */}
 
       {/* Playlist */}
       <Playlist 
