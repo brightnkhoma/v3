@@ -81,11 +81,12 @@ export const AlbumPlayer: React.FC<AlbumPlayerProps> = ({ item,onNavigateToComme
 
   const {progress,audioRef,currentTime} = audioManager
   const [count, setCount] = useState<number>(0)
-  const [isPaid, setIsPaid] = useState<boolean>(false)
+  const [isPaid, setIsPaid] = useState<boolean>(item.isPaid || false)
+
 
 
   const onCheckIfContentIsPaid = async ()=>{
-    const price = item.content.pricing.price || item.price?.price || 0
+    const price =item.total ||  item.content.pricing.price || item.price?.price || 0
     if(price == 0 || item.isPaid){
       setIsPaid(true)
 
@@ -192,7 +193,7 @@ useEffect(()=>{
   }
 
   return (
-    <div className="flex flex-col bg-gradient-to-b from-primary/20 via-background to-background rounded-xl p-4 md:p-6 w-full  mx-auto shadow-2xl border border-border">
+    <div className="flex flex-col bg-gradient-to-b from-primary/20 via-background to-background   p-4 md:p-6 w-full  mx-auto shadow-2xl border-none border-border">
       <MusicInfo
       id={audioManager.item?.owner.userId || "not-found"}
       handleShare={handleShare}
@@ -257,7 +258,7 @@ const MusicInfo = ({
 }: MusicInfoProps) => {
   return (
     <div className="flex flex-col md:flex-row w-full gap-4 md:gap-6">
-      <div className="relative aspect-square w-full max-w-[200px] md:w-48 md:h-48 rounded-lg overflow-hidden shadow-lg group mx-auto md:mx-0">
+      <div className="relative aspect-square w-full max-w-[200px] md:w-48 md:h-48   overflow-hidden shadow-lg group mx-auto md:mx-0">
         <Image
           src={image || "/images/default.png"}
           alt="Album cover"

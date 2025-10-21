@@ -30,7 +30,8 @@ const initialState: AppState = {
   meta: null,
   showPreview: false,
   folderMusicViewMode: "grid",
-  audioFile: null
+  audioFile: null,
+
 };
 
 export const authSlice = createSlice({
@@ -72,10 +73,16 @@ export const authSlice = createSlice({
     setAudioFile : (state, payload : PayloadAction<ContentFile | null>)=>{
       state.audioFile = payload.payload
     },
+    logout : (state)=>{
+      state.user = {} as User;
+      state.wallet = {} as UserWallet;
+      state.meta = null
+      
+    }
   
     
   }
 });
 
-export const { setAuthState,login,setCurrentFile,setWallet,setFolder,setMeta,setPreview,setFolderMusicViewMode,setAudioFile} = authSlice.actions;
+export const { setAuthState,login,setCurrentFile,setWallet,setFolder,setMeta,setPreview,setFolderMusicViewMode,setAudioFile,logout} = authSlice.actions;
 export const authReducer = authSlice.reducer;

@@ -66,6 +66,7 @@ export interface Content {
 
 export interface Movie extends Content {
   views: number | undefined;
+  listens ?: number;
   director: string;
   cast: string[];
   duration: number; // in seconds
@@ -217,7 +218,11 @@ export interface Folder{
   price ? : Pricing;
   isPoster : boolean;
   dateCreated ? : Date;
-  isPaid ? : boolean
+  isPaid ? : boolean;
+  commission ?: number;
+  tax ?: number;
+  total : number
+
 
 }
 
@@ -524,7 +529,8 @@ export interface PromotionSlotBase {
 
 export interface SliderPromotion extends PromotionSlotBase {
   type: MyPromotionType.SLIDER;
-  id : string
+  id : string;
+  startDate  : Date
 }
 
 export interface RowPromotion extends PromotionSlotBase {
@@ -534,10 +540,12 @@ export interface RowPromotion extends PromotionSlotBase {
 
 export interface ArtistPromotion extends PromotionSlotBase {
   type: MyPromotionType.ARTIST_ROW;
+  startDate  : Date
 }
 
 export interface AlbumPromotion extends PromotionSlotBase {
-  type: MyPromotionType.ALBUM
+  type: MyPromotionType.ALBUM,
+  startDate  : Date
 }
 
 export type PromotionType = 'Slider' | 'Row' | 'Artist' | 'Album';
@@ -552,6 +560,8 @@ export interface MusicRow {
   duration: string;
   description?: string;
   features?: string[];
+  type : any;
+  startDate  : Date
 }
 
 export interface Artist {
@@ -712,4 +722,50 @@ export interface VideoPromotionSlot {
 export interface VideoFolderCollection{
   item : VideoFolderItem,
   count : number,
+}
+
+
+export interface Ticket{
+  name : string;
+  description : string;
+  categories : TicketCategory[];
+  id : string;
+  parentId : string;
+  creator : User;
+  ticketPoster : string;
+  count : TicketCount;
+  isPurchased : boolean;
+  isPoster : boolean;
+  eventStartDate : Date;
+  eventEndDate ? : Date;
+  location ? : TicketLocation;
+  whatToExpect ? : TicketWhatToExpect;
+  purchasedBy ? : string;
+  datePurchased ? : Date;
+  purchasedCategory ? : TicketCategory
+
+}
+export interface TicketLocation{
+  name : string,
+  description : string
+}
+export interface TicketWhatToExpect{
+  expectations : string[]
+}
+export interface TicketCount{
+  total : number;
+  purchased : number;
+  available : number;
+}
+
+export interface TicketCategory{
+  name : string;
+  price : number;
+  commission ? : CommissionProp
+
+}
+export interface CommissionProp {
+    commission: number;
+    tax: number;
+    total: number;
 }

@@ -1,6 +1,8 @@
 import { MusicFolderItem } from '@/app/lib/types';
-import {Search, ArrowLeft, X, Loader2} from 'lucide-react'
-import { useState, useRef, useEffect } from "react"
+import { Search, ArrowLeft, X, Loader2, Music, User, Album, Play } from 'lucide-react';
+import { useState, useRef, useEffect } from "react";
+import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface SearchBarProps {
     text: string;
@@ -12,6 +14,7 @@ interface SearchBarProps {
     isLoading: boolean;
     onSuggestionClick: (item: MusicFolderItem) => Promise<void>;
     loadingSuggestionId: string | null;
+    compact?: boolean;
 }
 
 export const SearchBar: React.FC<SearchBarProps> = ({
@@ -23,105 +26,181 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     setShowSuggestions,
     isLoading,
     onSuggestionClick,
-    loadingSuggestionId
+    loadingSuggestionId,
+    compact = false
 }) => {
-    const searchRef = useRef<HTMLDivElement>(null)
+    const searchRef = useRef<HTMLDivElement>(null);
 
-    // useEffect(() => {
-    //     const handleClickOutside = (event: MouseEvent) => {
-    //         if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-    //             setShowSuggestions(false)
-    //         }
-    //     }
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+                setShowSuggestions(false);
+            }
+        };
 
-    //     document.addEventListener('mousedown', handleClickOutside)
-    //     return () => document.removeEventListener('mousedown', handleClickOutside)
-    // }, [setShowSuggestions])
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [setShowSuggestions]);
 
     const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault()
-        onSearch()
-    }
+        e.preventDefault();
+        onSearch();
+        setShowSuggestions(false);
+    };
+
+    const clearSearch = () => {
+        onInputChange("");
+        setShowSuggestions(false);
+    };
+
+    const getItemIcon = (item: MusicFolderItem) => {
+        
+        return <Music size={14} />;
+    };
 
     return (
-        <div className="hidden max-w-[7%] w-full sm:max-w-[30%] lg:max-w-[40%] mx-auto sm:flex lg:flex flex-col relative" ref={searchRef}>
-            <form onSubmit={handleSubmit} className="flex flex-row items-center rounded-2xl border border-gray-300 dark:border-gray-600 pl-3 bg-white dark:bg-black transition-all duration-200 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-200 dark:focus-within:ring-blue-800">
+        <div 
+            ref={searchRef}
+            className={cn(
+                "flex flex-col relative",
+                compact ? "max-w-xs" : "max-w-2xl flex-1"
+            )}
+        >
+            <form 
+                onSubmit={handleSubmit}
+                className={cn(
+                    "flex items-center ml-10 rounded-2xl border bg-background/80 backdrop-blur-sm transition-all duration-300",
+                    "hover:border-border/80 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20",
+                    "border-border/50 shadow-sm hover:shadow-md",
+                    compact ? "h-9" : "h-12"
+                )}
+            >
+                <div className="flex items-center pl-3 pr-2 text-muted-foreground">
+                    {isLoading ? (
+                        <Loader2 size={compact ? 16 : 18} className="animate-spin text-primary" />
+                    ) : (
+                        <Search size={compact ? 16 : 18} />
+                    )}
+                </div>
+                
                 <input 
-                    className="w-full border-none focus:outline-0 flex-1 bg-transparent py-2 text-sm placeholder-gray-500 dark:placeholder-gray-400"
+                    className={cn(
+                        "w-full border-none bg-transparent placeholder-muted-foreground focus:outline-none",
+                        "text-foreground transition-all duration-200",
+                        compact ? "text-sm py-2" : "text-base py-3"
+                    )}
                     type="text" 
                     placeholder="Search songs, artists, albums..." 
                     value={text}
                     onChange={(e) => onInputChange(e.target.value)}
-                    onFocus={() => text.length > 2 && setShowSuggestions(true)}
+                    onFocus={() => text.length > 0 && setShowSuggestions(true)}
                 />
+                
                 {text && (
                     <button
                         type="button"
-                        onClick={() => {
-                            onInputChange("")
-                            setShowSuggestions(false)
-                        }}
-                        className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                        onClick={clearSearch}
+                        className="p-2 text-muted-foreground hover:text-foreground transition-colors duration-200"
                     >
-                        <X size={16} />
+                        <X size={compact ? 14 : 16} />
                     </button>
                 )}
+                
                 <button 
                     type="submit"
-                    className="w-12 h-10 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center rounded-r-2xl transition-colors"
-                    disabled={isLoading}
-                >
-                    {isLoading ? (
-                        <Loader2 size={20} className="animate-spin text-blue-500" />
-                    ) : (
-                        <Search size={20} className="text-gray-600 dark:text-gray-400" />
+                    disabled={!text.trim() || isLoading}
+                    className={cn(
+                        "flex items-center justify-center transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed",
+                        compact ? "w-8 h-8 rounded-xl mr-1" : "w-12 h-10 rounded-2xl mr-1",
+                        "bg-primary hover:bg-primary/90 text-primary-foreground"
                     )}
+                >
+                    <Search size={compact ? 14 : 16} />
                 </button>
             </form>
             
-            {showSuggestions && suggestions.length > 0 && (
-                                   <div>
-                <X onClick={()=>setShowSuggestions(false)} size={18} className='ml-2 animate-in text-red-500 dark:text-red-200 cursor-pointer'/>
-
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
-                    {suggestions.map((item) => (
-                        <div
-                            key={item.content.contentId}
-                            className={`px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors border-b border-gray-100 dark:border-gray-700 last:border-b-0 ${
-                                loadingSuggestionId === item.content.contentId ? 'bg-blue-50 dark:bg-blue-900/20' : ''
-                            }`}
-                            onClick={async () => {
-                               await onSuggestionClick(item)
-                            }}
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 bg-gray-200 dark:bg-gray-600 rounded flex items-center justify-center">
-                                    {loadingSuggestionId === item.content.contentId ? (
-                                        <Loader2 size={14} className="animate-spin text-blue-500" />
-                                    ) : (
-                                        <Search size={14} className="text-gray-500" />
-                                    )}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                        {item.content.title}
-                                        {loadingSuggestionId === item.content.contentId && (
-                                            <span className="ml-2 text-blue-500">Loading...</span>
-                                        )}
-                                    </p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                                        {item.content.artists?.join(', ')}
-                                    </p>
-                                </div>
+            <AnimatePresence>
+                {showSuggestions && suggestions.length > 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute top-full left-0 right-0 mt-2 bg-background/95 backdrop-blur-xl border border-border rounded-xl shadow-2xl z-50 max-h-80 overflow-y-auto"
+                    >
+                        <div className="p-2 border-b border-border/50">
+                            <div className="flex items-center justify-between px-3 py-2">
+                                <span className="text-sm font-medium text-foreground">
+                                    Search Results
+                                </span>
+                                <button
+                                    onClick={() => setShowSuggestions(false)}
+                                    className="p-1 rounded-lg hover:bg-accent transition-colors"
+                                >
+                                    <X size={14} className="text-muted-foreground" />
+                                </button>
                             </div>
                         </div>
-                    ))}
-                </div>
-                                   </div>
-            )}
+                        
+                        <div className="p-2">
+                            {suggestions.map((item, index) => (
+                                <motion.div
+                                    key={`${item.content.contentId}-${index}`}
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: index * 0.05 }}
+                                    className={cn(
+                                        "group relative flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all duration-200",
+                                        "hover:bg-accent/50 border border-transparent hover:border-border/50",
+                                        loadingSuggestionId === item.content.contentId && "bg-primary/10 border-primary/20"
+                                    )}
+                                    onClick={async () => await onSuggestionClick(item)}
+                                >
+                                    <div className={cn(
+                                        "flex items-center justify-center rounded-lg transition-colors duration-200",
+                                        "group-hover:bg-primary/20 group-hover:text-primary",
+                                        loadingSuggestionId === item.content.contentId 
+                                            ? "bg-primary text-primary-foreground" 
+                                            : "bg-accent text-muted-foreground",
+                                        compact ? "w-8 h-8" : "w-10 h-10"
+                                    )}>
+                                        {loadingSuggestionId === item.content.contentId ? (
+                                            <Loader2 size={compact ? 12 : 14} className="animate-spin" />
+                                        ) : (
+                                            getItemIcon(item)
+                                        )}
+                                    </div>
+                                    
+                                    <div className="flex-1 min-w-0">
+                                        <p className={cn(
+                                            "font-medium truncate transition-colors",
+                                            loadingSuggestionId === item.content.contentId 
+                                                ? "text-primary" 
+                                                : "text-foreground group-hover:text-primary"
+                                        )}>
+                                            {item.content.title}
+                                        </p>
+                                        <p className="text-sm text-muted-foreground truncate">
+                                            {item.content.artists?.join(', ') || 'Unknown Artist'}
+                                        </p>
+                                    </div>
+                                    
+                                    <div className={cn(
+                                        "opacity-0 group-hover:opacity-100 transition-all duration-200",
+                                        "p-2 rounded-lg bg-primary text-primary-foreground",
+                                        loadingSuggestionId === item.content.contentId && "opacity-100"
+                                    )}>
+                                        <Play size={12} fill="currentColor" />
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
-    )
-}
+    );
+};
 
 interface SearchField2Props extends SearchTriggerButtonProps {
     text: string;
@@ -148,99 +227,194 @@ export const SearchField2: React.FC<SearchField2Props> = ({
     onSuggestionClick,
     loadingSuggestionId
 }) => {
-    if (!show) return null;
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (show && inputRef.current) {
+            inputRef.current.focus();
+        }
+    }, [show]);
 
     const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault()
-        onSearch()
-    }
+        e.preventDefault();
+        onSearch();
+        setShowSuggestions(false);
+    };
+
+    const clearSearch = () => {
+        onInputChange("");
+        setShowSuggestions(false);
+    };
+
+    const getItemIcon = (item: MusicFolderItem) => {
+       
+        return <Music size={18} />;
+    };
+
+    if (!show) return null;
 
     return (
-        <div className="flex absolute sm:hidden lg:hidden flex-col w-full h-screen top-0 left-0 bg-white dark:bg-black p-4 z-50">
-            <div className="flex flex-row items-center w-full gap-3 mb-4">
-                <BackButton setShow={setShow} show={show} />
-                <form onSubmit={handleSubmit} className="flex-1 flex flex-row items-center border border-gray-300 dark:border-gray-600 rounded-2xl pl-3 bg-white dark:bg-black">
-                    <input 
-                        className="w-full border-none focus:outline-0 flex-1 bg-transparent py-3 text-base placeholder-gray-500 dark:placeholder-gray-400"
-                        placeholder="Search songs, artists, albums..." 
-                        type="text" 
-                        value={text}
-                        onChange={(e) => onInputChange(e.target.value)}
-                        autoFocus
-                    />
-                    {text && (
-                        <button
-                            type="button"
-                            onClick={() => onInputChange("")}
-                            className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                        >
-                            <X size={18} />
-                        </button>
-                    )}
-                    <button 
-                        type="submit"
-                        className="w-14 h-12 cursor-pointer bg-blue-500 hover:bg-blue-600 flex items-center justify-center rounded-r-2xl transition-colors"
-                        disabled={isLoading}
-                    >
-                        {isLoading ? (
-                            <Loader2 size={20} className="animate-spin text-white" />
-                        ) : (
-                            <Search size={20} className="text-white" />
+        <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed inset-0 z-50 bg-background/95 backdrop-blur-xl "
+        >
+            <div className="flex items-center gap-3 p-4 border-b border-border/50">
+                <button 
+                    onClick={() => setShow(false)}
+                    className="p-2 rounded-xl hover:bg-accent transition-colors duration-200"
+                >
+                    <ArrowLeft size={20} className="text-foreground" />
+                </button>
+                
+                <form onSubmit={handleSubmit} className="flex-1">
+                    <div className="flex items-center rounded-2xl border border-border bg-background/50 pl-3 pr-1">
+                        <input 
+                            ref={inputRef}
+                            className="w-full border-none bg-transparent py-4 text-base placeholder-muted-foreground focus:outline-none text-foreground"
+                            placeholder="Search songs, artists, albums..." 
+                            type="text" 
+                            value={text}
+                            onChange={(e) => onInputChange(e.target.value)}
+                        />
+                        {text && (
+                            <button
+                                type="button"
+                                onClick={clearSearch}
+                                className="p-2 text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                                <X size={18} />
+                            </button>
                         )}
-                    </button>
+                        <button 
+                            type="submit"
+                            disabled={!text.trim() || isLoading}
+                            className="w-14 h-12 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground rounded-2xl transition-all duration-200 flex items-center justify-center"
+                        >
+                            {isLoading ? (
+                                <Loader2 size={20} className="animate-spin" />
+                            ) : (
+                                <Search size={20} />
+                            )}
+                        </button>
+                    </div>
                 </form>
             </div>
 
-            {showSuggestions && suggestions.length > 0 && (
-                              <div>
-                                  <X onClick={()=>setShowSuggestions(false)} size={18} className='ml-2 animate-in text-red-500 dark:text-red-200 cursor-pointer'/>
-
-                <div className="flex-1 overflow-y-auto">
-                    {suggestions.map((item,i) => (
-                        <div
-                            key={i}
-                            className={`px-4 py-4 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors border-b border-gray-100 dark:border-gray-700 ${
-                                loadingSuggestionId === item.content.contentId ? 'bg-blue-50 dark:bg-blue-900/20' : ''
-                            }`}
-                            onClick={async () => {
-
-                               await onSuggestionClick(item)
-                            }}
+            <div className="flex-1 overflow-y-auto">
+                <AnimatePresence>
+                    {showSuggestions && suggestions.length > 0 && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="p-4 space-y-2"
                         >
-                            <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 bg-gray-200 dark:bg-gray-600 rounded flex items-center justify-center">
-                                    {loadingSuggestionId === item.content.contentId ? (
-                                        <Loader2 size={16} className="animate-spin text-blue-500" />
-                                    ) : (
-                                        <Search size={16} className="text-gray-500" />
-                                    )}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-base font-medium text-gray-900 dark:text-white truncate">
-                                        {item.content.title}
-                                        {loadingSuggestionId === item.content.contentId && (
-                                            <span className="ml-2 text-blue-500">Loading...</span>
-                                        )}
-                                    </p>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                                        {item.content.artists?.join(', ')}
-                                    </p>
-                                </div>
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-lg font-semibold text-foreground">
+                                    Search Results
+                                </h3>
+                                <button
+                                    onClick={() => setShowSuggestions(false)}
+                                    className="p-2 rounded-lg hover:bg-accent transition-colors"
+                                >
+                                    <X size={16} className="text-muted-foreground" />
+                                </button>
                             </div>
-                        </div>
-                    ))}
-                </div>
-                              </div>
-            )}
+                            
+                            {suggestions.map((item, index) => (
+                                <motion.div
+                                    key={`${item.content.contentId}-${index}`}
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: index * 0.05 }}
+                                    className={cn(
+                                        "flex items-center gap-4 p-4 rounded-xl cursor-pointer transition-all duration-200",
+                                        "hover:bg-accent/50 border border-transparent hover:border-border/50",
+                                        loadingSuggestionId === item.content.contentId && "bg-primary/10 border-primary/20"
+                                    )}
+                                    onClick={async () => await onSuggestionClick(item)}
+                                >
+                                    <div className={cn(
+                                        "flex items-center justify-center rounded-xl transition-colors duration-200",
+                                        loadingSuggestionId === item.content.contentId 
+                                            ? "bg-primary text-primary-foreground" 
+                                            : "bg-accent text-muted-foreground",
+                                        "w-12 h-12"
+                                    )}>
+                                        {loadingSuggestionId === item.content.contentId ? (
+                                            <Loader2 size={16} className="animate-spin" />
+                                        ) : (
+                                            getItemIcon(item)
+                                        )}
+                                    </div>
+                                    
+                                    <div className="flex-1 min-w-0">
+                                        <p className={cn(
+                                            "text-base font-medium truncate",
+                                            loadingSuggestionId === item.content.contentId 
+                                                ? "text-primary" 
+                                                : "text-foreground"
+                                        )}>
+                                            {item.content.title}
+                                        </p>
+                                        <p className="text-sm text-muted-foreground truncate">
+                                            {item.content.artists?.join(', ') || 'Unknown Artist'}
+                                        </p>
+                                    </div>
+                                    
+                                    <div className={cn(
+                                        "p-2 rounded-lg bg-primary text-primary-foreground transition-all duration-200",
+                                        loadingSuggestionId === item.content.contentId && "animate-pulse"
+                                    )}>
+                                        <Play size={14} fill="currentColor" />
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
-            {text && !isLoading && suggestions.length === 0 && (
-                <div className="flex-1 flex items-center justify-center">
-                    <p className="text-gray-500 dark:text-gray-400">No results found</p>
-                </div>
-            )}
-        </div>
-    )
-}
+                {text && !isLoading && suggestions.length === 0 && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="flex flex-col items-center justify-center py-16 px-4 text-center"
+                    >
+                        <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center mb-4">
+                            <Search size={24} className="text-muted-foreground" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-foreground mb-2">
+                            No results found
+                        </h3>
+                        <p className="text-muted-foreground">
+                            Try different keywords or check your spelling
+                        </p>
+                    </motion.div>
+                )}
+
+                {!text && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="flex flex-col items-center justify-center py-16 px-4 text-center"
+                    >
+                        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                            <Search size={24} className="text-primary" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-foreground mb-2">
+                            Search Zathuplay
+                        </h3>
+                        <p className="text-muted-foreground">
+                            Find your favorite songs, artists, and albums
+                        </p>
+                    </motion.div>
+                )}
+            </div>
+        </motion.div>
+    );
+};
 
 interface SearchTriggerButtonProps {
     show: boolean;
@@ -251,22 +425,13 @@ export const SearchTriggerButton: React.FC<SearchTriggerButtonProps> = ({ setSho
     if (show) return null;
 
     return (
-        <button 
+        <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => setShow(true)} 
-            className="sm:hidden lg:hidden mx-auto p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+            className="p-3 hover:bg-accent rounded-xl transition-colors duration-200"
         >
-            <Search size={24} className="text-gray-600 dark:text-gray-400" />
-        </button>
-    )
-}
-
-const BackButton: React.FC<SearchTriggerButtonProps> = ({ setShow, show }) => {
-    return (
-        <button 
-            onClick={() => setShow(!show)} 
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-        >
-            <ArrowLeft size={24} className="text-gray-600 dark:text-gray-400" />
-        </button>
-    )
-}
+            <Search size={20} className="text-foreground" />
+        </motion.button>
+    );
+};

@@ -246,9 +246,9 @@ export class AudioManager {
         this.updateUi()
 }
 
-   async fetchAlbum (myItem : MusicFolderItem){
-    if(!(myItem.folderId == this.item?.folderId && this.albumCopy.length > 0)){
-            const myAlbum = await getMusicAlbum(myItem)
+   async fetchAlbum (myItem : MusicFolderItem,shouldFetch : boolean){
+    if(shouldFetch){
+            const myAlbum = await getMusicAlbum(myItem,this.user)
     this.album = myAlbum
     if(this.playOrder == 'shuffle'){
         this.albumCopy = this.shuffleArray(myAlbum)
@@ -397,19 +397,30 @@ export class AudioManager {
 
 
   async setItem (myItem : MusicFolderItem ) {
+    const shouldFetch = myItem.folderId != this.item?.folderId
     
       this.item = myItem
       if(this.updateUi)
           this.updateUi()
-
-      const file = await this.getFile(myItem)
+      const play = async()=>{
+              const file = await this.getFile(myItem)
       if(file){
           await this.play(file)
           if(this.updateUi)
           this.updateUi()
-            await this.fetchAlbum(myItem)
+            
         
     }
+      }
+
+      const fetchAlbum = async()=>{
+        await this.fetchAlbum(myItem,shouldFetch)
+        if(this.updateUi)
+          this.updateUi()
+      }
+
+      await Promise.all([play(),fetchAlbum()])
+
     if(this.updateUi)
     this.updateUi()
 if(this._updateUi_)

@@ -283,7 +283,7 @@ async onGetLikeCount() {
     async directPlay (myItem : VideoFolderItem){
         try {
             this.currentPlayingVideo = myItem
-            this.price = this.currentPlayingVideo.content.pricing.price || this.currentPlayingVideo.price?.price || 0
+            this.price =this.currentPlayingVideo.total || this.currentPlayingVideo.content.pricing.price || this.currentPlayingVideo.price?.price || 0
             this.requiresPayment = this.price > 0
             this.isPaidContent = this.currentPlayingVideo.isPaid
             this.onUpdateUi()

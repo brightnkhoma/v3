@@ -19,6 +19,7 @@ import { DropzoneInputProps, useDropzone } from "react-dropzone"
 import { PasteButton } from "./ui/pasteButton"
 import { PromoteButton } from "./ui/promoteButton"
 import { VideoPromotionButton } from "./videoPromoteButton"
+import { PromotedMusicButton } from "./ui/promotedMusicButton"
 
 export interface PathNameProps {
     name : string
@@ -52,6 +53,7 @@ export const StudioTopBar : React.FC<StudioTopBarProps>= ({audioInputRef,videoIn
             <ViewButton/>
             <PromoteButton/>
             <VideoPromotionButton/>
+            <PromotedMusicButton/>
             <div className="flex-1"></div>
             <DetailsButton/>
         </div>

@@ -21,8 +21,8 @@ export function makePayment(paymentDetails : PaymentDetails){
         "tx_ref": paymentDetails.txId,
         "amount": amount,
         "currency": "MWK",
-        "callback_url": "https://www.google.com/",
-        "return_url": "https://www.google.com/",
+        "callback_url": "https://v3-sepia-zeta.vercel.app/",
+        "return_url": "https://v3-sepia-zeta.vercel.app/",
         "customer":customer,
         "customization": {
           "title": "Continue with Payment",

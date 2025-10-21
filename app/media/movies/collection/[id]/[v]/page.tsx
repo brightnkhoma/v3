@@ -180,7 +180,7 @@ const Page = () => {
                         <div className="relative group flex justify-center lg:justify-start">
                             <div className="relative h-80 w-64 rounded-2xl overflow-hidden shadow-2xl border-2 border-primary/10">
                                 <Image
-                                    src={folderInfo.folderPoster || "/images/5.jpg"}
+                                    src={folderInfo.folderPoster || "/images/vc.webp"}
                                     alt={folderInfo.folderName}
                                     fill
                                     className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -338,7 +338,7 @@ const Page = () => {
                                     <CardContent className="p-0 relative">
                                         <div className="relative h-48 w-full">
                                             <Image
-                                                src={video.content.thumbnail || video.folderPoster || "/images/5.jpg"}
+                                                src={video.content.thumbnail || video.folderPoster || "/images/vc.webp"}
                                                 alt={video.folderName}
                                                 fill
                                                 className="object-cover group-hover:scale-110 transition-transform duration-500"

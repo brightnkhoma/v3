@@ -1,7 +1,7 @@
 "use client"
 import { AlbumPlayer } from "@/app/components/albumPlayer"
 import { MusicList } from "@/app/components/musicItem"
-import { getFileContent, getFolderItem, getMusicAlbum } from "@/app/lib/dataSource/contentDataSource"
+import { getFileContent, getFolderItem, getMusicAlbum, getVideoItem } from "@/app/lib/dataSource/contentDataSource"
 import { showToast } from "@/app/lib/dataSource/toast"
 import { setAudioFile} from "@/app/lib/local/redux/reduxSclice"
 import { RootState, useAppDispatch, useAppSelector } from "@/app/lib/local/redux/store"
@@ -23,8 +23,10 @@ const MusicPlay = ()=>{
     const {user} = useAppSelector((state : RootState)=> state.auth)
     const currentPlayingMusic =audioManager.item
     const [isAlbumLoading] = useState<boolean>(false)
+    const [loading, setLoading] = useState<boolean>(true)
     const router = useRouter()
       const [ui,setUi] = useState<number>(3)
+      const {id : v} = useParams()
   const updateUi = useCallback(()=>{
         setUi(prev=>prev == 3 ? 2 : 3)
       },[ui])
@@ -32,6 +34,16 @@ const MusicPlay = ()=>{
     const onNavigateToComments = ()=>{
          router.push("#xcomments")
     }
+    
+      const getAudio = async () => {
+        if (v) {
+          const _item : any= await getVideoItem(v as string, user);
+          if (_item) {
+            await audioManager.setItem(_item);
+          }
+        }
+        setLoading(false)
+      };
 
 
     
@@ -74,6 +86,10 @@ const MusicPlay = ()=>{
         }
         get()
     },[x])
+
+    useEffect(()=>{
+        getAudio()
+    },[v])
 
 
   

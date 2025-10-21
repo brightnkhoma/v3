@@ -130,7 +130,6 @@ const VideoPromotionPage: NextPage = () => {
 
   return (
     <div className="min-h-screen ">
-      {/* Header */}
       <header className="">
         <div className="container mx-auto px-4 py-6">
           <h1 className="text-3xl font-bold">Promote Your Videos</h1>
@@ -141,7 +140,6 @@ const VideoPromotionPage: NextPage = () => {
       </header>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Video Selection */}
         <section className="mb-8">
           <h2 className="text-2xl font-bold mb-4">Select Video to Promote</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -168,7 +166,6 @@ const VideoPromotionPage: NextPage = () => {
           </div>
         </section>
 
-        {/* Promotion Slots */}
         {selectedVideo && (
           <section className="mb-8">
             <h2 className="text-2xl font-bold mb-4">Choose Promotion Type</h2>
@@ -217,7 +214,6 @@ const VideoPromotionPage: NextPage = () => {
           </section>
         )}
 
-        {/* Duration Customization */}
        {selectedVideo && selectedSlot && (
   <section className="mb-8">
     <Card className="max-w-md">
@@ -284,7 +280,7 @@ const VideoPromotionPage: NextPage = () => {
             </div>
             <div className="text-right">
               <p className="text-2xl font-bold text-green-400">
-                ${calculateTotalCost().toFixed(2)}
+                MK{calculateTotalCost().toFixed(2)}
               </p>
               <p className="text-xs text-muted-foreground">
                 Including all fees
@@ -308,7 +304,6 @@ const VideoPromotionPage: NextPage = () => {
   </section>
 )}
 
-        {/* Active Promotions */}
         <section>
           <h2 className="text-2xl font-bold mb-4">Your Active Promotions</h2>
           {promotions.length === 0 ? (
@@ -347,7 +342,6 @@ const VideoPromotionPage: NextPage = () => {
         </section>
       </div>
 
-      {/* Purchase Dialog */}
       {showPurchaseDialog && selectedVideo && selectedSlot && (
         <div className="fixed text-white inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
@@ -371,7 +365,7 @@ const VideoPromotionPage: NextPage = () => {
               <div className="flex justify-between text-lg border-t border-gray-700 pt-3">
                 <span>Total Cost:</span>
                 <span className="font-bold text-green-400">
-                  ${calculateTotalCost().toFixed(2)}
+                  MK{calculateTotalCost().toFixed(2)}
                 </span>
               </div>
             </div>

@@ -14,7 +14,7 @@ export interface VideoStackProps {
 }
 
 export const VideoStack: React.FC<VideoStackProps> = ({ item, onClick, className }) => {
-    const imageUrl = useMemo(() => item.item.folderPoster || "/images/5.jpg", [item]);
+    const imageUrl = useMemo(() => item.item.folderPoster || "/images/vc.webp", [item]);
     
     const handleClick = useCallback(() => {
         onClick(item.item.folderId);

@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Play, Pause, Heart, MoreHorizontal, Clock, ListMusic, Music, ShoppingCart, Check, Lock, Coins, Loader2, X, AlertCircle, Loader } from 'lucide-react';
 import Image from 'next/image';
 import { MusicFolderItem, User, zathuPath } from '@/app/lib/types';
-import { getFilteredItems, getFolderItems, getFolders, onGetFolderItems, onGetPaidContent, purchase } from '@/app/lib/dataSource/contentDataSource';
+import { getFilteredItems, getFolderItems, getFolders, getMusicAlbum, onGetFolderItems, onGetPaidContent, purchase } from '@/app/lib/dataSource/contentDataSource';
 import { RootState, useAppSelector } from '@/app/lib/local/redux/store';
 import { useParams, useRouter } from 'next/navigation';
 import { AppContext } from '@/app/appContext';
@@ -85,8 +85,7 @@ export default function MusicPage() {
 
     setAlbumLoading(album.folderId);
     try {
-      const x: User = { userId: id.id as string } as User;
-      const items = await onGetFolderItems(x, album,user) as MusicFolderItem[];
+      const items = await getMusicAlbum(album,user) as MusicFolderItem[];
       setTracks(items);
       setSelectedAlbum(album);
     } catch (err) {
@@ -943,7 +942,7 @@ function AlbumRow({
   
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === 'dark';
-  const isPaid = album.isPaid;
+  const isPaid = false;
   const hasPrice = album.price?.price;
 
   return (

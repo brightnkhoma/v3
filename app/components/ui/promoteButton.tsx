@@ -1,16 +1,17 @@
 'use client'
 
-import { usePathname, useRouter } from "next/navigation"
+import { useParams, usePathname, useRouter } from "next/navigation"
 import { Megaphone } from "lucide-react"
 
 export const PromoteButton = () => {
     const router = useRouter()
     const pathName = usePathname()
+    const {id} = useParams()
     
     if (!pathName.includes("studio/musicFolder")) return null;
 
     const handleClick = () => {
-        router.push(`/media/studio/promote`)
+        router.push(`/media/studio/${id}/promote`)
     }
 
     return (

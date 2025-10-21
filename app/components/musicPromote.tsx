@@ -1,5 +1,5 @@
 "use client"
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext, useEffect, useCallback } from "react";
 import { Plus, X, Music, Disc, Users, Sliders, Check, Info, Crown, Calendar, Clock, User, LogOut, FileEdit, Megaphone, Receipt, Loader } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,8 +14,9 @@ import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { RootState, useAppSelector } from "../lib/local/redux/store";
 import { MockPromotionData, MusicRow, PromotionType, UserContent as UserContentType, Artist, MusicFolderItem, SliderPromotion } from "../lib/types";
-import { getPromotionAdvert, purchasePromotionAlbum, purchasePromotionArtist, purchasePromotionRow, purchasePromotionSlider } from "../lib/dataSource/contentDataSource";
+import { getItemById, getPromotionAdvert, onGetFolderItems, purchasePromotionAlbum, purchasePromotionArtist, purchasePromotionRow, purchasePromotionSlider } from "../lib/dataSource/contentDataSource";
 import { AppContext } from "../appContext";
+import { useParams } from "next/navigation";
 
 
 
@@ -26,7 +27,25 @@ export const Promote = () => {
   const [loading, setLoading] = useState<boolean>(true)
   const {user} = useAppSelector((state : RootState)=> state.auth)
   const {global} = useContext(AppContext)!
-  const {selectedMusicFolderItems} = global
+  const [selectedMusicFolderItems, setSelectedMusicFolderItems] = useState<MusicFolderItem[]>([])
+  const {aid : id} = useParams()
+
+      const onGetFiles =useCallback( async()=>{
+         
+          if(id ){
+            
+              
+          const item = await getItemById(user.userId || "__",id as string)
+          if(item){
+              const data = await onGetFolderItems(user,item)
+              setSelectedMusicFolderItems(data as MusicFolderItem[])              
+          }
+      }
+      },[id])
+
+
+
+
 
   const mockArtist = {
     id : user.userId,
@@ -65,6 +84,10 @@ export const Promote = () => {
   useEffect(()=>{
     getPData()
   },[])
+
+  useEffect(()=>{
+    onGetFiles()
+  },[id])
 
 
   if(loading){

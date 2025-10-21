@@ -84,10 +84,10 @@ const MusicCard = ({ item, index, isPlaying, onPlay, user }: MusicCardProps) => 
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.2, delay: index * 0.03 }}
         className={cn(
-          "group flex items-center gap-4 p-3 rounded-lg transition-colors border",
+          "group flex items-center gap-4 p-3  transition-colors border-none",
           isPlaying
-            ? "bg-primary/10 border-primary/20 shadow-sm"
-            : "bg-card hover:bg-accent border-border",
+            ? "bg-primary/0 border-primary/0 shadow-sm"
+            : "bg-card/0 hover:bg-accent border-bordern",
           theme === "dark" ? "shadow-none" : "shadow-sm"
         )}
       >

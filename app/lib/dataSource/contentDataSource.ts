@@ -1,4 +1,4 @@
-import { audioFormats, Content, ContentFile, ContentItem, ContentType, Folder, LicenseType, LikedContent, Movie, Music, MusicFolderItem, MusicFolderType, PurchasedContent, User, UserWallet, VideoFolderItem, VideoFolderType, videoFormats, zathuPath,Comment, FilteredContent, MusicRowProps, Promotion, MockPromotionData, SliderPromotion, MusicRow, AlbumPromotion, VideoFolderPromotion, VideoPromotionAdvert, VideoFolderCollection } from "../types"
+import { audioFormats, Content, ContentFile, ContentItem, ContentType, Folder, LicenseType, LikedContent, Movie, Music, MusicFolderItem, MusicFolderType, PurchasedContent, User, UserWallet, VideoFolderItem, VideoFolderType, videoFormats, zathuPath,Comment, FilteredContent, MusicRowProps, Promotion, MockPromotionData, SliderPromotion, MusicRow, AlbumPromotion, VideoFolderPromotion, VideoPromotionAdvert, VideoFolderCollection, Ticket, ArtistPromotion } from "../types"
 import axios from "axios"
 import { maiPath } from "./global"
 import { UploadTask, ref, uploadBytesResumable, UploadTaskSnapshot, getDownloadURL } from "firebase/storage"
@@ -601,7 +601,8 @@ export const createDefaultFolder = (user : User, folderType : MusicFolderType | 
         folderId: "",
         owner: user,
         folderPoster: "",
-        isPoster: true
+        isPoster: true,
+        total: 0
     }
     const x : MusicFolderType[] = ["Album","Default","Playlist"]
     const y : VideoFolderType[] = ["Movie","Music-Video","Podcast","Series"]
@@ -792,9 +793,9 @@ export const getFileContent = async(item : MusicFolderItem | VideoFolderItem,use
 }
 
 
-export const getMusicAlbum = async (item : MusicFolderItem)=>{
+export const getMusicAlbum = async (item : MusicFolderItem, user : User)=>{
     try {
-        const res = await axios.post(`${maiPath}/get-music-album`,{item})
+        const res = await axios.post(`${maiPath}/get-music-album`,{item,user})
         return res.data.album as MusicFolderItem[]
     } catch (error) {
         console.log(error);
@@ -1022,9 +1023,9 @@ export const getItemById = async(userId : string, itemId : string)=>{
 }
 
 
-export const getVideos = async(lastDoc : VideoFolderItem | undefined = undefined) : Promise<VideoFolderItem[]>=>{
+export const getVideos = async(lastDoc : VideoFolderItem | undefined = undefined,lastDoc1 : VideoFolderItem | undefined = undefined) : Promise<VideoFolderItem[]>=>{
     try {
-        const res = await axios.post(`${maiPath}/get-videos`,{lastDoc})
+        const res = await axios.post(`${maiPath}/get-videos`,{lastDoc,lastDoc1})
         if(res.status == 200){
             return res.data.items as VideoFolderItem[]
         }
@@ -1185,9 +1186,10 @@ export const purchasePromotionAlbum = async(user : User,item : MusicFolderItem,o
 
 }
 
-export const getPromotedMusic = async ()=>{
+export const getPromotedMusic = async (_user : User )=>{
     try {
-        const res = await axios.post(`${maiPath}/get-promoted-music`)
+        const user : User = (_user && _user.userId && _user.userId.length > 5) ? _user : {userId : "__"} as User
+        const res = await axios.post(`${maiPath}/get-promoted-music`,{user})
         if(res.status == 200){
             return res.data.data as {
             sliders: MusicFolderItem[];
@@ -1338,4 +1340,198 @@ export const getSubscriptions = async(user : User)=>{
         console.log(error);
     }
     return []
+}
+
+
+export const getSeries = async(lastDoc : VideoFolderItem | undefined = undefined) : Promise<VideoFolderItem[]>=>{
+    try {
+        const res = await axios.post(`${maiPath}/get-series`,{lastDoc})
+        if(res.status == 200){
+            return res.data.items as VideoFolderItem[]
+        }
+        return []
+    } catch (error) {
+        console.log(error);
+        return []
+        
+    }
+}
+
+export const getTickets = async():Promise<Ticket[]>=>{
+    try {
+        const res = await axios.post(`${maiPath}/get-tickets`)
+        if(res.status == 200){
+            return res.data.tickets as Ticket[]
+        }
+    } catch (error) {
+        console.log(error);        
+    }
+    return []
+}
+export const getUserTickets = async(user : User):Promise<Ticket[]>=>{
+    try {
+        const res = await axios.post(`${maiPath}/get-user-tickets`,{user})
+        if(res.status == 200){
+            return res.data.tickets as Ticket[]
+        }
+    } catch (error) {
+        console.log(error);        
+    }
+    return []
+}
+export const getTicketbyId = async(id : string):Promise<Ticket | null>=>{
+    try {
+        const res = await axios.post(`${maiPath}/get-ticket-by-id`,{id})
+        if(res.status == 200){
+            return res.data.ticket as Ticket
+        }
+    } catch (error) {
+        console.log(error);        
+    }
+    return null
+}
+
+export const createTicket = async(ticket : Ticket,onSuccess : ()=> void, onFailure : ()=> void)=>{
+    try {
+            const res = await axios.post(`${maiPath}/generate-ticket`,{ticket})
+            if(res.status==200) return onSuccess();
+
+    } catch (error) {
+        console.log();
+        
+    }
+    onFailure()
+}
+export const updateTicket = async(ticket : Ticket,user : User,onSuccess : ()=> void, onFailure : ()=> void)=>{
+    try {
+            const res = await axios.post(`${maiPath}/update-ticket`,{ticket,user})
+            if(res.status==200) return onSuccess();
+
+    } catch (error) {
+        console.log();
+        
+    }
+    onFailure()
+}
+export const replicateTicket = async(ticket : Ticket,user : User,count : number,onSuccess : ()=> void, onFailure : ()=> void)=>{
+    try {
+            const res = await axios.post(`${maiPath}/replicate-ticket`,{ticket,user,count})
+            if(res.status==200) return onSuccess();
+
+    } catch (error) {
+        console.log();
+        
+    }
+    onFailure()
+}
+export const deleteTicket = async(ticket : Ticket,user : User,onSuccess : ()=> void, onFailure : ()=> void)=>{
+    try {
+            const res = await axios.post(`${maiPath}/delete-ticket`,{ticket,user})
+            if(res.status==200) return onSuccess();
+
+    } catch (error) {
+        console.log();
+        
+    }
+    onFailure()
+}
+
+3
+
+
+export const listenToTicketChange = async(ticket : Ticket,user : User,onResult : (ticket : Ticket)=> void) =>{
+    try {
+          const docRef = doc(db, `${zathuPath}/tickets/all/${user.userId}/${ticket.parentId}/tickets/${ticket.parentId}`);
+          onSnapshot(docRef,(change)=>{
+            if(change.exists()){
+                onResult(change.data() as Ticket)
+            }
+          })
+
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+export const payForTicket = async(ticket : Ticket, user : User, amount : number, categoryName : string,onSuccess : ()=> void,onFailure : ()=> void)=>{
+    try {
+        const res = await axios.post(`${maiPath}/pay-for-ticket`,{ticket,user,amount,categoryName})
+        if(res.status == 200){
+            return onSuccess()
+        }
+    } catch (error) {
+        console.log(error);
+        
+    }
+    onFailure()
+  
+}
+
+export const getUserTicketCount = async(parentId : string, user : User)=>{
+    try {
+        const res = await axios.post(`${maiPath}/get-user-purchased-tickets-by-ticket-id-count`,{parentId,user})
+        if(res.status == 200){
+            return res.data.tickets.count as number
+        }
+    } catch (error) {
+        console.log(error);
+        
+    }
+    return 0
+}
+export const getUserTicketsByTicketId = async(parentId : string, user : User)=>{
+    try {
+        const res = await axios.post(`${maiPath}/get-user-purchased-tickets-by-ticket-id`,{parentId,user})
+        if(res.status == 200){
+            return res.data.tickets as Ticket[]
+        }
+    } catch (error) {
+        console.log(error);
+        
+    }
+    return []
+}
+export const getUserPurchasedItems = async (user : User, lastDoc : MusicFolderItem | VideoFolderItem | undefined  = undefined)=>{
+    try {
+         const res = await axios.post(`${maiPath}/get-user-purchased-contents`,{user,lastDoc})
+        if(res.status == 200){
+            return res.data.items as {items : (MusicFolderItem | VideoFolderItem)[], lastDoc : any}
+        }
+        
+    } catch (error) {
+        console.log(error);
+        
+    }
+    return {} as {items : (MusicFolderItem | VideoFolderItem)[], lastDoc : any}
+}
+
+
+
+export const getUserMusicPromotions = async(user : User) =>{
+    try {
+    const res = await axios.post(`${maiPath}/get-user-music-promotion`,{user})
+    if(res.status == 200){
+        const data = res.data.items
+        const items : (MusicRow | ArtistPromotion | SliderPromotion)[] = [...data.row,...data.slider,...data.artist,...data.album]
+        return items
+    }
+     
+    } catch (error) {
+        console.log(error);
+        
+    }
+    return []
+}
+
+export const deletePromotedMusic = async(user : User, promotion : (MusicRow | ArtistPromotion | SliderPromotion | AlbumPromotion),onSuccess : ()=> void, onFailure : ()=> void)=>{
+    try {
+        const res = await axios.post(`${maiPath}/delete-user-music-promotion`,{user,promotion})
+    if(res.status == 200){
+        return onSuccess()
+    }
+    } catch (error) {
+        console.log(error);
+        
+    }
+    onFailure()
 }

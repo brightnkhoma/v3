@@ -14,7 +14,7 @@ export const ContentWrapper = ({children}: {children: React.ReactNode}) => {
     const dispatch = useAppDispatch()
     const name = pathName?.split("/")
     const x: string = name?.slice(0, name?.length - 1).join("/") || ""
-    const paths = ["/media/studio/musicFolder", "/media/studio/videoFolder", "/media/studio"]
+    const paths = ["/media/studio/musicFolder", "/media/studio/videoFolder", "/media/studio","/media/studio/movieFolder"]
     const isUploadAllowed = paths.includes(x)
     const [isDragActive, setIsDragActive] = useState(false)
     const [file, setFile] = useState<File>()
