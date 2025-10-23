@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import { ContentFile, MusicFolderItem, User, UserWallet, VideoFolderItem } from "../../types";
+import { ContentFile, MusicFolderItem, Series, User, UserWallet, VideoFolderItem } from "../../types";
 
 export interface AppState {
   authState: boolean;
@@ -8,7 +8,8 @@ export interface AppState {
   currentFile : string;
   wallet : UserWallet;
   folder : MusicFolderItem | VideoFolderItem | null,
-  meta : MusicFolderItem | VideoFolderItem | null,
+  meta : MusicFolderItem | VideoFolderItem  | null,
+  meta2 : Series | null;
   showPreview : boolean,
   folderMusicViewMode : "grid" | "list",
   audioFile : ContentFile | null,
@@ -31,7 +32,7 @@ const initialState: AppState = {
   showPreview: false,
   folderMusicViewMode: "grid",
   audioFile: null,
-
+  meta2: null
 };
 
 export const authSlice = createSlice({
@@ -61,9 +62,14 @@ export const authSlice = createSlice({
       state.folder = payload.payload
     },
   
-    setMeta : (state, payload : PayloadAction<MusicFolderItem | VideoFolderItem | null>)=>{
+    setMeta : (state, payload : PayloadAction<MusicFolderItem | VideoFolderItem  | null>)=>{
       state.meta = payload.payload
     },
+    setMeta2 : (state, payload : PayloadAction<Series  | null>)=>{
+
+      state.meta2 = payload.payload
+    }
+    ,
     setPreview : (state, payload : PayloadAction<boolean>)=>{
       state.showPreview = payload.payload
     },
@@ -84,5 +90,5 @@ export const authSlice = createSlice({
   }
 });
 
-export const { setAuthState,login,setCurrentFile,setWallet,setFolder,setMeta,setPreview,setFolderMusicViewMode,setAudioFile,logout} = authSlice.actions;
+export const { setAuthState,login,setCurrentFile,setWallet,setFolder,setMeta,setPreview,setFolderMusicViewMode,setAudioFile,logout,setMeta2} = authSlice.actions;
 export const authReducer = authSlice.reducer;

@@ -1,4 +1,4 @@
-import { audioFormats, Content, ContentFile, ContentItem, ContentType, Folder, LicenseType, LikedContent, Movie, Music, MusicFolderItem, MusicFolderType, PurchasedContent, User, UserWallet, VideoFolderItem, VideoFolderType, videoFormats, zathuPath,Comment, FilteredContent, MusicRowProps, Promotion, MockPromotionData, SliderPromotion, MusicRow, AlbumPromotion, VideoFolderPromotion, VideoPromotionAdvert, VideoFolderCollection, Ticket, ArtistPromotion } from "../types"
+import { audioFormats, Content, ContentFile, ContentItem, ContentType, Folder, LicenseType, LikedContent, Movie, Music, MusicFolderItem, MusicFolderType, PurchasedContent, User, UserWallet, VideoFolderItem, VideoFolderType, videoFormats, zathuPath,Comment, FilteredContent, MusicRowProps, Promotion, MockPromotionData, SliderPromotion, MusicRow, AlbumPromotion, VideoFolderPromotion, VideoPromotionAdvert, VideoFolderCollection, Ticket, ArtistPromotion, Series, Season, Episode } from "../types"
 import axios from "axios"
 import { maiPath } from "./global"
 import { UploadTask, ref, uploadBytesResumable, UploadTaskSnapshot, getDownloadURL } from "firebase/storage"
@@ -1534,4 +1534,130 @@ export const deletePromotedMusic = async(user : User, promotion : (MusicRow | Ar
         
     }
     onFailure()
+}
+
+
+export const createNewSeriesFolder = async (user : User, series : Series)=>{
+    try {
+    const res = await axios.post(`${maiPath}/create-new-series-folder`,{user,series})
+    if(res.status == 200){
+        return true;
+    }
+
+    } catch (error) {
+        console.log(error);
+        
+    }
+    return false
+}
+export const createSeason = async (user : User, season : Season)=>{
+    try {
+    const res = await axios.post(`${maiPath}/create-new-season-folder`,{user,season})
+    if(res.status == 200){
+        return true;
+    }
+
+    } catch (error) {
+        console.log(error);
+        
+    }
+    return false
+}
+export const createEpisode = async (user : User, episode : Episode,contentFile : ContentFile)=>{
+    try {
+    const res = await axios.post(`${maiPath}/create-new-folder-episode`,{user,episode,contentFile})
+    if(res.status == 200){
+        return true;
+    }
+
+    } catch (error) {
+        console.log(error);
+        
+    }
+    return false
+}
+
+export const getUserSeries = async (user : User)=>{
+    try {
+        const res = await axios.post(`${maiPath}/get-user-series`,{user})
+    if(res.status == 200){
+        return res.data.items as Series[];
+    }        
+    } catch (error) {
+        console.log(error);
+        
+    }
+    return []
+}
+export const getUserSeasonsById = async (user : User, seriesId : string)=>{
+    try {
+        const res = await axios.post(`${maiPath}/get-user-seasons-by-id`,{user,seriesId})
+    if(res.status == 200){
+        return res.data.items as Season[];
+    }        
+    } catch (error) {
+        console.log(error);
+        
+    }
+    return []
+}
+export const getEpisodesBySeasonId = async (user : User, seriesId : string, seasonId : string)=>{
+    try {
+        const res = await axios.post(`${maiPath}/get-user-seasons-episodes-by-id`,{user,seriesId,seasonId})
+    if(res.status == 200){
+        return res.data.items as Episode[];
+    }        
+    } catch (error) {
+        console.log(error);
+        
+    }
+    return []
+}
+export const getEpisodesAlbum = async (episode : Episode)=>{
+    try {
+        const res = await axios.post(`${maiPath}/get-episode-album`,{episode})
+    if(res.status == 200){
+        return res.data.items as VideoFolderItem[];
+    }        
+    } catch (error) {
+        console.log(error);
+        
+    }
+    return []
+}
+export const getEpisodeById = async (episodeId : string, user : User)=>{
+    try {
+        const res = await axios.post(`${maiPath}/get-episode-by-id`,{episodeId,user})
+    if(res.status == 200){
+        return res.data.item as Episode;
+    }        
+    } catch (error) {
+        console.log(error);
+        
+    }
+    return null
+}
+export const getUserSeriesById = async (user : User,seriesId : string)=>{
+    try {
+        const res = await axios.post(`${maiPath}/get-user-series-by-id`,{user,seriesId})
+    if(res.status == 200){
+        return res.data.item as Series;
+    }        
+    } catch (error) {
+        console.log(error);
+        
+    }
+    return null
+}
+export const getUserSeasonById = async (user : User,seasonId : string)=>{
+    try {
+        const res = await axios.post(`${maiPath}/get-user-season-by-id`,{user,seasonId})
+    if(res.status == 200){
+        return res.data.item as Season;
+    }        
+    } catch (error) {
+        console.log(error);
+        
+    }
+    return null
 }

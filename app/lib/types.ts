@@ -73,6 +73,54 @@ export interface Movie extends Content {
   rating: string; // "PG-13", "R", etc.
 }
 
+
+
+export interface Series {
+  name : string;
+  id : string;
+  owner : User;
+  uploadDate : Date;
+  numberOfSeasons ? : number;
+  isTranslated : boolean;
+  actors : string[];
+  description : Description;
+  licence : LicenseType;
+  pricing : Pricing;
+  thumbnail : string;
+  isPublished : boolean;
+
+}
+
+export interface Season{
+  seasonNumber : number;
+  seriesId : string;
+  seasonName : string;
+  numberOfEpisodes : number;
+  description : Description;
+  seasonId : string;
+  thumbNail ? : string;
+  isPublished : boolean
+}
+
+export interface Episode{
+  episodeNumber: number;
+  id : string;
+  name : string;
+  seasonId : string;
+  seriesId : string;
+  description : Description;
+  content : VideoFolderItem;
+  isPublished : boolean
+}
+
+export interface Description{
+  heading : string;
+  content : string;
+}
+
+
+
+
 export interface Music extends Content {
   artists: string[];
   album: string;

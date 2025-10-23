@@ -1,8 +1,8 @@
 "use client"
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { ContentFile, VideoFolderItem, VideoFolderPromotion, User } from '@/app/lib/types';
-import { getFileContent, getVideoItem, onVerifyPaidContent, purchase } from '../lib/dataSource/contentDataSource';
+import { ContentFile, VideoFolderItem, VideoFolderPromotion, User, Episode } from '@/app/lib/types';
+import { getEpisodeById, getFileContent, getVideoItem, onVerifyPaidContent, purchase } from '../lib/dataSource/contentDataSource';
 import { RootState, useAppSelector } from '../lib/local/redux/store';
 import { VideoPlayer } from './videoPlayer';
 import { AppContext } from '../appContext';
@@ -31,6 +31,8 @@ const formatTime = (timeInSeconds: number) => {
 const WatchPage: React.FC = () => {
   const router = useRouter();
   const { v } = useParams();
+  const searchParams = useSearchParams()
+  const isEpisode = searchParams.get("isEpisode");
   const { user } = useAppSelector((state: RootState) => state.auth);
   const { videoManager } = useContext(AppContext)!;
   const { 
@@ -114,7 +116,14 @@ const WatchPage: React.FC = () => {
 
   const getVideo = async () => {
     if (v) {
-      const _item = await getVideoItem(v as string, user);
+       
+      let _item : Episode | VideoFolderItem | null 
+      if((isEpisode || "")?.length > 0){
+        _item = await getEpisodeById(v as string,user);
+      }else{
+        
+       _item = await getVideoItem(v as string, user) 
+      }
       if (_item) {
         if(!_item.content){
           _item.content = DefaultMovie
@@ -123,6 +132,7 @@ const WatchPage: React.FC = () => {
         videoManager.onUpdateUi();
       }
     }
+
   };
 
   const toggleDescription = () => {
@@ -340,7 +350,7 @@ const WatchPage: React.FC = () => {
             <motion.div variants={containerVariants} className="mt-6 lg:mt-8 space-y-6">
               <motion.div variants={itemVariants} className="flex items-start justify-between gap-4">
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-tight flex-1">
-                  {currentPlayingVideo.content.title}
+                  {currentPlayingVideo.content?.title}
                 </h1>
                 {requiresPayment && (
                   <div className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold ${
@@ -361,7 +371,7 @@ const WatchPage: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-1">
                     <Calendar className="w-4 h-4" />
-                    <span>{formatTimeAgo(new Date((currentPlayingVideo.content.releaseDate || new Date()) as any))}</span>
+                    <span>{formatTimeAgo(new Date((currentPlayingVideo.content?.releaseDate || new Date()) as any))}</span>
                   </div>
                   {requiresPayment && (
                     <div className="flex items-center gap-1 font-semibold text-primary">
@@ -451,10 +461,10 @@ const WatchPage: React.FC = () => {
               <motion.div variants={itemVariants} className="bg-muted/30 rounded-2xl p-6">
                 <div className={`prose prose-sm max-w-none ${isDescriptionExpanded ? '' : 'line-clamp-3'}`}>
                   <p className="text-foreground whitespace-pre-line leading-relaxed">
-                    {currentPlayingVideo.content.description || 'No description available.'}
+                    {currentPlayingVideo.content?.description || 'No description available.'}
                   </p>
                 </div>
-                {currentPlayingVideo.content.description && currentPlayingVideo.content.description.length > 200 && (
+                {currentPlayingVideo.content?.description && currentPlayingVideo.content.description.length > 200 && (
                   <button
                     onClick={toggleDescription}
                     className="text-primary hover:text-primary/80 font-medium text-sm mt-3 transition-colors"

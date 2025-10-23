@@ -3,6 +3,7 @@ import { MusicFolderType, VideoFolderType } from "@/app/lib/types"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { PlusCircle, ChevronDown } from "lucide-react"
 import { Music2, LucideVideo, FolderPlusIcon } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { DropzoneInputProps } from "react-dropzone"
 
 interface MenuItemProps {
@@ -34,6 +35,7 @@ export const NewDropDownMenu: React.FC<DropdownMenuProps> = ({
 }) => {
     const { meta } = useAppSelector((state: RootState) => state.auth)
     const a = pathName == "/media/studio"
+    const router = useRouter()
 
     const handleNewMusicClick = () => {
         if (audioInputRef.current) {
@@ -45,6 +47,9 @@ export const NewDropDownMenu: React.FC<DropdownMenuProps> = ({
         if (videoInputRef.current) {
             videoInputRef.current.click()
         }
+    }
+    const handleClickNewSeries = ()=>{
+        router.push("/media/studio/series/create")
     }
 
     return (
@@ -71,7 +76,7 @@ export const NewDropDownMenu: React.FC<DropdownMenuProps> = ({
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 className="cursor-pointer"
-                                onClick={() => onCreateDefaultFolder("Series")}
+                                onClick={handleClickNewSeries}
                             >
                                 <MenuItem icon={<LucideVideo size={16} />} name="Series Folder" />
                             </DropdownMenuItem>

@@ -91,7 +91,11 @@ export const InVideoBottomBar = ({setShowPlaylist,showPlaylist} : {setShowPlayli
       name: isMuted ? "Unmute" : "Mute",
       onClick: () => videoManager.onToggleMute(),
       onMouseEnter: () => setShowVolumeSlider(true),
-      onMouseLeave: () => setShowVolumeSlider(false),
+      onMouseLeave: () => {
+        setTimeout(()=>{
+          setShowVolumeSlider(false)
+        },5000)
+      },
     },
   ]
 

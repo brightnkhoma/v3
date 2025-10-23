@@ -1,65 +1,41 @@
 import { setMeta, setMeta2 } from '@/app/lib/local/redux/reduxSclice'
 import { RootState, useAppDispatch, useAppSelector } from '@/app/lib/local/redux/store'
-import { MusicFolderItem, MusicFolderType, VideoFolderItem, VideoFolderType } from '@/app/lib/types'
-import { FolderClosed, Music, Video } from 'lucide-react'
+import { Series } from '@/app/lib/types'
+import { FolderClosed, Video } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useMemo } from 'react'
 
-export interface ContentFolderProps {
-  name: string
-  id: string
-  type: MusicFolderType | VideoFolderType
-  data: MusicFolderItem | VideoFolderItem
+export interface SeriesFolderProps {
+  series: Series
 }
 
-export const ContentFolder: React.FC<ContentFolderProps> = ({ 
-  name, 
-  id, 
-  type, 
-  data 
+export const SeriesFolder: React.FC<SeriesFolderProps> = ({ 
+  series 
 }) => {
   const router = useRouter()
   const dispatch = useAppDispatch()
-  const { meta } = useAppSelector((state: RootState) => state.auth)
-  
-  const MUSIC_TYPES: MusicFolderType[] = ['Album', 'Playlist']
-  const VIDEO_TYPES: VideoFolderType[] = ['Movie', 'Music-Video', 'Podcast', 'Series']
-
-  const folderIcon = useMemo(() => {
-    const iconProps = {
-      size: 16,
-      className: 'text-muted-foreground'
-    }
-    
-    return VIDEO_TYPES.includes(data.type as VideoFolderType) ? 
-      <Video {...iconProps} /> : 
-      <Music {...iconProps} />
-  }, [data.type])
+  const { meta2 } = useAppSelector((state: RootState) => state.auth)
 
   const isSelected = useMemo(() => 
-    data.folderId === meta?.folderId, 
-    [data.folderId, meta?.folderId]
+    series.id === meta2?.id, 
+    [series.id, meta2?.id]
   )
 
   const handleNavigate = useCallback(() => {
-    if (MUSIC_TYPES.includes(type as MusicFolderType)) {
-      router.push(`/media/studio/musicFolder/${id}?${new URLSearchParams({ userId: data.owner.userId })}`)
-    } else if (VIDEO_TYPES.includes(type as VideoFolderType)) {
-      router.push(`/media/studio/movieFolder/${id}?${new URLSearchParams({ userId: data.owner.userId })}`)
-    }
-    dispatch(setMeta(data))
-  }, [router, dispatch, type, id, data])
+    router.push(`/media/studio/series/${series.id}`)
+    dispatch(setMeta2(series))
+  }, [router, dispatch, series])
 
   const handleClick = useCallback(() => {
-    dispatch(setMeta(data))
-    dispatch(setMeta2(null))
-  }, [dispatch, data])
+    dispatch(setMeta2(series))
+    dispatch(setMeta(null))
+  }, [dispatch, series])
 
   return (
     <div
       role="button"
       tabIndex={0}
-      aria-label={`Open ${name} folder`}
+      aria-label={`Open ${series.name} folder`}
       onDoubleClick={handleNavigate}
       onClick={handleClick}
       onKeyDown={(e) => {
@@ -95,7 +71,10 @@ export const ContentFolder: React.FC<ContentFolderProps> = ({
         />
         
         <div className="absolute -bottom-1 -right-1 bg-white dark:bg-gray-800 rounded-full p-0.5 shadow-sm">
-          {folderIcon}
+          <Video 
+            size={16}
+            className="text-muted-foreground"
+          />
         </div>
       </div>
 
@@ -108,9 +87,9 @@ export const ContentFolder: React.FC<ContentFolderProps> = ({
             : 'text-gray-900 dark:text-gray-100'
           }
         `}
-        title={name}
+        title={series.name}
       >
-        {name}
+        {series.name}
       </span>
     </div>
   )

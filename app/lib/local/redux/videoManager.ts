@@ -1,5 +1,5 @@
-import { AccountType, ContentFile, Library, MusicFolderItem, User, VideoFolderItem } from "../../types";
-import { checkIfSubscribed, downloadFileWithProgress, getFileContent, getLikeCount, getRelatedVideos, getUserLike, getVideoAlbum,getViews, likeMusic, onListenViewIncrement, purchase, subscribe } from "../../dataSource/contentDataSource";
+import { AccountType, ContentFile, Episode, Library, MusicFolderItem, Series, User, VideoFolderItem } from "../../types";
+import { checkIfSubscribed, downloadFileWithProgress, getEpisodesAlbum, getFileContent, getLikeCount, getRelatedVideos, getUserLike, getVideoAlbum,getViews, likeMusic, onListenViewIncrement, purchase, subscribe } from "../../dataSource/contentDataSource";
 import { RefObject } from "react";
 import { showToast } from "../../dataSource/toast";
 
@@ -280,8 +280,23 @@ async onGetLikeCount() {
         }
     }
 
-    async directPlay (myItem : VideoFolderItem){
+    detectFile (file : Episode | VideoFolderItem){
+        if((file as VideoFolderItem).folderId){
+            return "item"
+        }
+        return "episode"
+    }
+
+    getItemFromSeries (file : Episode){
+        return file.content
+    }
+
+
+
+    async directPlay (_myItem : VideoFolderItem | Episode){
         try {
+            const type = this.detectFile(_myItem)
+            const myItem = type == "item" ? _myItem as VideoFolderItem: this.getItemFromSeries(_myItem as Episode)
             this.currentPlayingVideo = myItem
             this.price =this.currentPlayingVideo.total || this.currentPlayingVideo.content.pricing.price || this.currentPlayingVideo.price?.price || 0
             this.requiresPayment = this.price > 0
@@ -302,7 +317,9 @@ async onGetLikeCount() {
             }
             }
             const fetchAlbum = async ()=>{
+                if(type == "item")
                 await this.fetchAlbum(myItem)
+            else this.fetchEpisodeAlbum(_myItem as Episode)
             }
             await Promise.all([play(), fetchAlbum(),this.onGetLikeCount(),this.incrementView(),this.checkSubscription(myItem.owner,this.user.userId)
 ])
@@ -332,6 +349,21 @@ async onGetLikeCount() {
     async fetchRelatedVideos(item : VideoFolderItem){
         const items = await getRelatedVideos(item,this.user)
         this.relatedVideos = items
+    }
+    
+    async fetchEpisodeAlbum (episode : Episode){
+        
+        const x = async()=>{
+            const items = await getEpisodesAlbum(episode)
+        this.album = items
+        }
+
+         const y = async()=>{
+
+            await this.fetchRelatedVideos(episode.content)
+        }
+
+        await Promise.all([x(),y()])
     }
 
     async next(){
@@ -414,6 +446,8 @@ async onGetLikeCount() {
             if(this.videoRef.current){
                 this.videoRef.current.volume = volume/100
                 this.volume = volume/100
+                this.onUpdateUi()
+
             }
         } catch (error) {
             console.log(error);
