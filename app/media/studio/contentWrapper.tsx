@@ -2,9 +2,11 @@
 import { StudioTopBar } from "@/app/components/studioTopBar"
 import { useAppSelector, RootState, useAppDispatch } from "@/app/lib/local/redux/store"
 import { usePathname } from "next/navigation"
-import { useState, useCallback, useRef } from "react"
+import { useState, useCallback, useRef, useEffect } from "react"
 import { useDropzone } from "react-dropzone"
 import { Container } from "./container"
+import { useRouter } from "next/navigation"
+import { showToast } from "@/app/lib/dataSource/toast"
 
 type UploadStatus = 'idle' | 'uploading' | 'success' | 'error'
 
@@ -22,6 +24,8 @@ export const ContentWrapper = ({children}: {children: React.ReactNode}) => {
     const [status, setStatus] = useState<UploadStatus>('idle')
     const [fileType, setFileType] = useState<'image' | 'video' | 'audio' | 'other'>('other')
     const [preview, setPreview] = useState<string | ArrayBuffer | null>(null)
+    const [isclient, setIsClient] = useState<boolean>(false)
+    const router = useRouter()
     
     // Create refs for manual file input triggers
     const audioInputRef = useRef<HTMLInputElement>(null)
@@ -78,6 +82,21 @@ export const ContentWrapper = ({children}: {children: React.ReactNode}) => {
         maxFiles: 1,
         disabled: !isUploadAllowed
     })
+
+    useEffect(()=> {
+        if(!isclient){
+            setIsClient(true)
+        }
+    },[user])
+
+    useEffect(()=>{
+        if(isclient){
+           if(!user || !user.userId || user.userId.length < 5){
+             showToast("Please login First.")
+            router.push("/login")
+           }
+        }
+    },[isclient,user])
 
     return (
         <div className="flex flex-col gap-4">

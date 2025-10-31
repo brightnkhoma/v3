@@ -291,8 +291,6 @@ async onGetLikeCount() {
         return file.content
     }
 
-
-
     async directPlay (_myItem : VideoFolderItem | Episode){
         try {
             const type = this.detectFile(_myItem)
@@ -339,30 +337,24 @@ async onGetLikeCount() {
             this.album = await getVideoAlbum(item,this.user)
         }
         const y = async()=>{
-
             await this.fetchRelatedVideos(item)
         }
-
         await Promise.all([x(),y()])
     }
 
     async fetchRelatedVideos(item : VideoFolderItem){
-        const items = await getRelatedVideos(item,this.user)
-        this.relatedVideos = items
-    }
-    
+                const items = await getRelatedVideos(item,this.user)
+                this.relatedVideos = items
+        }
+
     async fetchEpisodeAlbum (episode : Episode){
-        
         const x = async()=>{
-            const items = await getEpisodesAlbum(episode)
+            const items = await getEpisodesAlbum(episode,this.user)
         this.album = items
         }
-
          const y = async()=>{
-
             await this.fetchRelatedVideos(episode.content)
         }
-
         await Promise.all([x(),y()])
     }
 
@@ -420,13 +412,10 @@ async onGetLikeCount() {
     }
 
     async checkSubscription(user : User, userId : string){
-       
             const success = await checkIfSubscribed(user,userId)
             this.isSubscribed = success
             this.onUpdateUi()
-        
-
-    }
+        }
 
     onSeek(position : number){
         try {
@@ -441,21 +430,19 @@ async onGetLikeCount() {
         }
     }
 
-    onChangeVolume (volume : number){
-               try {
-            if(this.videoRef.current){
-                this.videoRef.current.volume = volume/100
-                this.volume = volume/100
-                this.onUpdateUi()
-
+onChangeVolume (volume : number){
+try {
+    if(this.videoRef.current){
+             this.videoRef.current.volume = volume/100
+             this.volume = volume/100
+             this.onUpdateUi()
             }
-        } catch (error) {
+       } catch (error) {
             console.log(error);
-            
-        }finally{
+       }finally{
             this.onUpdateUi()
-        }
-    }
+     }
+}
 
 onToggleMute() {
     try {
@@ -479,7 +466,7 @@ onToggleMute() {
 
 
 
-    async repeat(){
+async repeat(){
         try {
             if(this.videoRef.current){
                 const target = this.videoRef.current
@@ -488,9 +475,8 @@ onToggleMute() {
             }
         } catch (error) {
             console.log(error);
-            
         }
-    }
+}
 
     async onToglePlayPause (){
         try {
@@ -504,15 +490,12 @@ onToggleMute() {
             }
         } catch (error) {
             console.log(error);
-            
         }finally{
             this.onUpdateUi()
         }
     }
 
-
-
-    async listenToVideoPlay(){
+async listenToVideoPlay(){
         try {
             if(this.videoRef.current){
                 const target = this.videoRef.current
@@ -539,9 +522,4 @@ onToggleMute() {
              return null
         }
      }
-    
-
-
-
-   
 }

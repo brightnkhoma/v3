@@ -1,4 +1,3 @@
-// app/zathu/play/series/[seriesId]/seasons/[seasonId]/episodes/[episodeId]/page.tsx
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
@@ -12,17 +11,24 @@ import {
   Clock,
   Calendar,
   Eye,
+  EyeOff,
   Share2,
-  FileText
+  FileText,
+  DollarSign,
+  Globe,
+  Lock
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { showToast as toast } from "@/app/lib/dataSource/toast";
-import { ContentFile, Episode, Season, Series } from "@/app/lib/types";
+import { ContentFile, Episode, Season, Series, Pricing } from "@/app/lib/types";
 import { RootState, useAppSelector } from "@/app/lib/local/redux/store";
-import { getEpisodeById, getFileContent, getUserSeasonById, getUserSeriesById } from "@/app/lib/dataSource/contentDataSource";
+import { getEpisodeById, getFileContent, getUserSeasonById, getUserSeriesById, updateEpisodePrice } from "@/app/lib/dataSource/contentDataSource";
 
 const showToast = (x: string, y: string, z: any = "default") => {
   toast(x, { description: y, type: z });
@@ -41,19 +47,43 @@ export default function EpisodeDetailsPage() {
   const [season, setSeason] = useState<Season | null>(null);
   const [fileContent, setFileContent] = useState<ContentFile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const [isPublished, setIsPublished] = useState(false);
+
+  const [pricing, setPricing] = useState<Pricing>({
+    price: 0,
+    basePrice: 0,
+    currency: "USD", 
+    isPublic : true
+  });
 
   const onGetEpisode = useCallback(async () => {
     try {
       setIsLoading(true);
-      const episodeData = await getEpisodeById(episodeId,user);
+      const episodeData = await getEpisodeById(episodeId, user);
       setEpisode(episodeData || null);
+      const price : Pricing = {
+        isPublic: true,
+        price: episodeData?.content.price?.price || 0,
+        basePrice: episodeData?.content.total || 0,
+        currency: "MWK"
+      }
+      if(price && episodeData){
+                const item = episodeData
+                setPricing(prev=>({...prev,price : item.content.total || pricing.price,basePrice : item.content.price?.price || pricing.price}))
+ 
+                setIsPublished(episodeData.isPublished || false);
+      }
+      
+      
     } catch (error) {
       showToast("Error", "Failed to load episode details", "error");
       setEpisode(null);
     } finally {
       setIsLoading(false);
     }
-  }, [episodeId]);
+  }, [episodeId, user]);
 
   const onGetFileContent = useCallback(async () => {
     if (!episode?.content) return;
@@ -126,6 +156,63 @@ export default function EpisodeDetailsPage() {
       navigator.clipboard.writeText(window.location.href);
       showToast("Link copied", "Episode link copied to clipboard");
     }
+  };
+
+  const handleVisibilityToggle = async (published: boolean) => {
+    if (!episode) return;
+    
+    setIsUpdating(true);
+    try {
+      const item =  await updateEpisodePrice(user,{...episode,isPublished : !isPublished},pricing.basePrice)
+      if(item){
+        setEpisode(item)
+        setIsPublished(item.isPublished || false)
+         showToast(
+        "Success", 
+        `Episode ${published ? 'published' : 'unpublished'} successfully`,
+        "success"
+      );
+      return;
+      }
+      throw new Error("Update Failed")
+      
+     
+    } catch (error) {
+      showToast("Error", "Failed to update episode visibility", "error");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  // Handle pricing update
+  const handlePricingUpdate = async () => {
+    if (!episode) return;
+    
+    setIsUpdating(true);
+    try {
+      const item =  await updateEpisodePrice(user,{...episode,isPublished},pricing.basePrice)
+      if(item){
+        setEpisode(item)
+        setIsPublished(item.isPublished || false)
+        showToast("Success", "Episode pricing updated successfully", "success");
+        setPricing(prev=>({...prev,price : item.content.total || pricing.price,basePrice : item.content.price?.price || pricing.price}))
+      return;
+      }
+      throw new Error("Failed to update")
+    } catch (error) {
+      showToast("Error", "Failed to update episode pricing", "error");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  // Handle price input change
+  const handlePriceChange = (field: keyof Pricing, value: string) => {
+    const numValue = parseFloat(value) || 0;
+    setPricing(prev => ({
+      ...prev,
+      [field]: numValue
+    }));
   };
 
   // Load episode data on mount
@@ -432,6 +519,107 @@ export default function EpisodeDetailsPage() {
             </CardContent>
           </Card>
 
+          {/* Visibility & Pricing Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="h-5 w-5" />
+                Visibility & Pricing
+              </CardTitle>
+              <CardDescription>
+                Control who can see this episode and set pricing
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Visibility Toggle */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="episode-visibility" className="text-base">
+                    Episode Visibility
+                  </Label>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    {isPublished ? (
+                      <>
+                        <Eye className="h-4 w-4 text-green-600" />
+                        <span>Public - Visible to all users</span>
+                      </>
+                    ) : (
+                      <>
+                        <EyeOff className="h-4 w-4 text-orange-600" />
+                        <span>Private - Only visible to you</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <Switch
+                  id="episode-visibility"
+                  checked={isPublished}
+                  onCheckedChange={handleVisibilityToggle}
+                  disabled={isUpdating}
+                />
+              </div>
+
+              <div className="border-t pt-4">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="font-black">MWK</span>
+                    <h3 className="font-semibold">Pricing Settings</h3>
+                  </div>
+
+                  {/* Base Price */}
+                  <div className="space-y-2">
+                    <Label htmlFor="base-price" className="text-sm">
+                      Base Price (MWK)
+                    </Label>
+                    <Input
+                      id="base-price"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={pricing.basePrice}
+                      onChange={(e) => handlePriceChange('basePrice', e.target.value)}
+                      placeholder="0.00"
+                      className="w-full"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      The original price before any tax and service fee
+                    </p>
+                  </div>
+
+                  {/* Current Price */}
+                  <div className="space-y-2">
+                    <Label htmlFor="current-price" className="text-sm">
+                      Current Price (MWK)
+                    </Label>
+                    <Input
+                      id="current-price"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={pricing.price}
+                      placeholder="0.00"
+                      className="w-full"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      The price users will pay
+                    </p>
+                  </div>
+
+                 
+
+                  {/* Update Pricing Button */}
+                  <Button
+                    onClick={handlePricingUpdate}
+                    disabled={isUpdating}
+                    className="w-full"
+                  >
+                    {isUpdating ? "Updating..." : "Update Pricing"}
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Quick Actions Card */}
           <Card>
             <CardHeader>
@@ -467,8 +655,6 @@ export default function EpisodeDetailsPage() {
               </Button>
             </CardContent>
           </Card>
-
-          
         </div>
       </div>
     </div>

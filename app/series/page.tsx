@@ -7,6 +7,8 @@ import { Search, Filter, Grid3X3, List, SlidersHorizontal } from 'lucide-react';
 import { getSeries } from '@/app/lib/dataSource/contentDataSource';
 import { VideoFolderItem } from '@/app/lib/types';
 import { InView } from '@/app/components/inView';
+import { SeriesDisplay } from '../components/seriesPage';
+import { SeriesDisplayPage } from '../components/seriesDisplayPage';
 
 const Series: React.FC = () => {
   const [videos, setVideos] = useState<VideoFolderItem[]>([]);
@@ -249,4 +251,4 @@ const Series: React.FC = () => {
   );
 };
 
-export default Series;
+export default SeriesDisplayPage;

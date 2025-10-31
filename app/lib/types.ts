@@ -269,7 +269,9 @@ export interface Folder{
   isPaid ? : boolean;
   commission ?: number;
   tax ?: number;
-  total : number
+  total : number;
+  isPublished : boolean;
+  isTranslated : boolean;
 
 
 }

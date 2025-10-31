@@ -4,7 +4,7 @@ import { maiPath } from "./global"
 import { UploadTask, ref, uploadBytesResumable, UploadTaskSnapshot, getDownloadURL } from "firebase/storage"
 import { db, storage } from "../config/firebase"
 import {v4 as uuidv4} from 'uuid'
-import { collection, deleteDoc, doc, DocumentChangeType, getDoc, getDocs, onSnapshot, orderBy, query, setDoc, where } from "firebase/firestore"
+import { collection, deleteDoc, doc, DocumentChangeType, DocumentData, getDoc, getDocs, onSnapshot, orderBy, query, QueryDocumentSnapshot, QuerySnapshot, setDoc, where } from "firebase/firestore"
 import { firestoreTimestampToDate } from "../config/timestamp"
 // export const dbPath = "mstream/all"
 
@@ -1613,9 +1613,9 @@ export const getEpisodesBySeasonId = async (user : User, seriesId : string, seas
     }
     return []
 }
-export const getEpisodesAlbum = async (episode : Episode)=>{
+export const getEpisodesAlbum = async (episode : Episode,user : User, lastDoc : QuerySnapshot<DocumentData,DocumentData> | undefined = undefined)=>{
     try {
-        const res = await axios.post(`${maiPath}/get-episode-album`,{episode})
+        const res = await axios.post(`${maiPath}/get-episode-album`,{episode,user,lastDoc})
     if(res.status == 200){
         return res.data.items as VideoFolderItem[];
     }        
@@ -1649,11 +1649,83 @@ export const getUserSeriesById = async (user : User,seriesId : string)=>{
     }
     return null
 }
+export const getSeriesById = async (seriesId : string)=>{
+    try {
+        const res = await axios.post(`${maiPath}/get-series-by-id`,{seriesId})
+    if(res.status == 200){
+        return res.data.item as Series;
+    }        
+    } catch (error) {
+        console.log(error);
+        
+    }
+    return null
+}
+export const getSeriesSeasonById = async (seriesId : string)=>{
+    try {
+        const res = await axios.post(`${maiPath}/get-series-seasons-by-id`,{seriesId})
+    if(res.status == 200){
+        return res.data.items as Season[];
+    }        
+    } catch (error) {
+        console.log(error);
+        
+    }
+    return []
+}
+export const getSeriesSeasonEpisodesById = async (seasonId : string)=>{
+    try {
+        const res = await axios.post(`${maiPath}/get-series-seasons-season-by-id`,{seasonId})
+    if(res.status == 200){
+        return res.data.items as Episode[];
+    }        
+    } catch (error) {
+        console.log(error);
+        
+    }
+    return []
+}
 export const getUserSeasonById = async (user : User,seasonId : string)=>{
     try {
         const res = await axios.post(`${maiPath}/get-user-season-by-id`,{user,seasonId})
     if(res.status == 200){
         return res.data.item as Season;
+    }        
+    } catch (error) {
+        console.log(error);
+        
+    }
+    return null
+}
+export const getFolderSeries = async (lastDoc : QueryDocumentSnapshot<DocumentData,DocumentData> | undefined = undefined)=>{
+    try {
+        const res = await axios.post(`${maiPath}/get-folder-series`,{lastDoc})
+    if(res.status == 200){
+        return res.data.items as Series[];
+    }        
+    } catch (error) {
+        console.log(error);
+        
+    }
+    return null
+}
+export const getFolderSeriesSeasonCount = async (series : Series)=>{
+    try {
+        const res = await axios.post(`${maiPath}/get-folder-series-count`,{series})
+    if(res.status == 200){
+        return res.data.item as number;
+    }        
+    } catch (error) {
+        console.log(error);
+        
+    }
+    return null
+}
+export const updateEpisodePrice = async (user : User,episode : Episode, amount : number)=>{
+    try {
+        const res = await axios.post(`${maiPath}/update-episode-price`,{user,episode,amount})
+    if(res.status == 200){
+        return res.data.item as Episode;
     }        
     } catch (error) {
         console.log(error);

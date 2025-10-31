@@ -5,7 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Content, ContentType, Genre, Movie, Music, MusicFolderItem, Pricing, User, VideoFolderItem } from "../lib/types"
 import { useEffect, useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
-import { Pencil, Save, X, Loader2, Upload } from "lucide-react"
+import { Pencil, Save, X, Loader2, Upload, Globe, Languages } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { firestoreTimestampToDate } from "../lib/config/timestamp"
 import { listenToFolderItemChanges, listenToFolderPosterItemChanges, onUpdateFolderItem, uploadFile } from "../lib/dataSource/contentDataSource"
@@ -20,6 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
 
 interface FileMetaBarProps {
     data: MusicFolderItem | VideoFolderItem,
@@ -73,7 +76,9 @@ export const FileMetaBar: React.FC<FileMetaBarProps> = ({ data, onSave, user }) 
             if(
                 file.folderName == data.folderName && 
                 file.price?.price == data.price?.price && 
-                file.content.title == data.content.title
+                file.content.title == data.content.title &&
+                file.isPublished === data.isPublished &&
+                file.isTranslated === data.isTranslated
             ){
                 return
             }
@@ -82,7 +87,9 @@ export const FileMetaBar: React.FC<FileMetaBarProps> = ({ data, onSave, user }) 
                 ...y,
                 title: file.content.title || '',
                 folderName: file.folderName || '',
-                price: {...y.price!,price : file.price?.price || 0}
+                price: {...y.price!,price : file.price?.price || 0},
+                isPublished: file.isPublished,
+                isTranslated: file.isTranslated
             }))
         }
     }
@@ -182,9 +189,12 @@ export const FileMetaBar: React.FC<FileMetaBarProps> = ({ data, onSave, user }) 
         setFormState(data)
     }
 
-    const handleInputChange = (field: keyof typeof formState, value: string) => {
+    const handleInputChange = (field: keyof typeof formState, value: string | boolean) => {
         const y: MusicFolderItem | VideoFolderItem = {...formState}
-        if(field == "price"){
+        
+        if (field === "isPublished" || field === "isTranslated") {
+            y[field] = value as boolean
+        } else if(field == "price"){
             if(y.price){
                 const price: Pricing = {
                     isPublic: y.price.isPublic || true,
@@ -207,21 +217,21 @@ export const FileMetaBar: React.FC<FileMetaBarProps> = ({ data, onSave, user }) 
             y.content = {...y.content, genre: value as Genre}
         } else if(field == "name" as keyof typeof formState){
             if(!y.isPoster){
-                y.content.title = value
+                y.content.title = value as string
             }
         } else if(field == "folderName"){
             if(y.isPoster){
-                y.folderName = value
+                y.folderName = value as string
             }
         }
         if(field == "title" as keyof typeof formState){
             if(y.isPoster){
-                y.folderName = value || y.folderName
+                y.folderName = value as string || y.folderName
             } else {
                 if(y.content){
-                    y.content = {...y.content, title: value || y.content.title}
+                    y.content = {...y.content, title: value as string || y.content.title}
                 } else {
-                    if(y.isPoster) y.folderName = value || y.folderName
+                    if(y.isPoster) y.folderName = value as string || y.folderName
                 }
             }
         }
@@ -367,10 +377,15 @@ export const FileMetaBar: React.FC<FileMetaBarProps> = ({ data, onSave, user }) 
                             
                             {isEditing && !item.readOnly && item.field ? (
                                 item.field === 'price' ? (
-                                    <PriceInput 
+                                    <div className="flex flex-col">
+                                        <PriceInput 
                                         value={formState.price && formState.price.price ? (formState.price?.price.toString() || "0") : "0"}
                                         onChange={(value) => handleInputChange('price', value)}
                                     />
+                                    <Badge className="ml-auto">
+                                        what users will pay {formState.total}
+                                    </Badge>
+                                    </div>
                                 ) : item.field === 'genre' ? (
                                     <Select
                                         value={formState.content?.genre || "Soundtrack"}
@@ -400,12 +415,90 @@ export const FileMetaBar: React.FC<FileMetaBarProps> = ({ data, onSave, user }) 
                                     />
                                 )
                             ) : (
-                                <div className="text-sm text-black dark:text-white p-2.5 rounded-md bg-gray-50 dark:bg-gray-900 border border-transparent transition-colors duration-300">
-                                    {item.value || "-"}
+                                <div className="text-sm text-black dark:text-white p-2.5 rounded-md bg-gray-50 dark:bg-gray-900 border border-transparent transition-colors duration-300 flex flex-col">
+                                   <span> {item.value || "-"}</span>
+                                        {item.field == "price" && <Badge className="ml-auto">
+                                        Users will pay {formState.total}
+                                    </Badge>}
                                 </div>
                             )}
                         </div>
                     ))}
+                    
+                    {/* Status Switches */}
+                    <div className="space-y-4 md:col-span-2 border-t border-gray-200 dark:border-gray-800 pt-6 mt-2">
+                        <h3 className="text-lg font-medium text-black dark:text-white transition-colors duration-300">
+                            Status & Visibility
+                        </h3>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Published Status */}
+                            <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg transition-colors duration-300">
+                                        <Globe className="h-4 w-4 text-blue-600 dark:text-blue-400 transition-colors duration-300" />
+                                    </div>
+                                    <div>
+                                        <Label htmlFor="published-switch" className="text-sm font-medium text-black dark:text-white cursor-pointer transition-colors duration-300">
+                                            Published
+                                        </Label>
+                                        <p className="text-xs text-gray-600 dark:text-gray-400 transition-colors duration-300">
+                                            Make this content publicly available
+                                        </p>
+                                    </div>
+                                </div>
+                                {isEditing ? (
+                                    <Switch
+                                        id="published-switch"
+                                        checked={formState.isPublished || false}
+                                        onCheckedChange={(checked) => handleInputChange('isPublished', checked)}
+                                        className="data-[state=checked]:bg-black data-[state=unchecked]:bg-gray-300 dark:data-[state=unchecked]:bg-gray-700 transition-colors duration-300"
+                                    />
+                                ) : (
+                                    <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                        formState.isPublished 
+                                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                                            : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
+                                    } transition-colors duration-300`}>
+                                        {formState.isPublished ? 'Published' : 'Draft'}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Translated Status */}
+                            <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg transition-colors duration-300">
+                                        <Languages className="h-4 w-4 text-green-600 dark:text-green-400 transition-colors duration-300" />
+                                    </div>
+                                    <div>
+                                        <Label htmlFor="translated-switch" className="text-sm font-medium text-black dark:text-white cursor-pointer transition-colors duration-300">
+                                            Translated
+                                        </Label>
+                                        <p className="text-xs text-gray-600 dark:text-gray-400 transition-colors duration-300">
+                                            Content has been translated
+                                        </p>
+                                    </div>
+                                </div>
+                                {isEditing ? (
+                                    <Switch
+                                        id="translated-switch"
+                                        checked={formState.isTranslated || false}
+                                        onCheckedChange={(checked) => handleInputChange('isTranslated', checked)}
+                                        className="data-[state=checked]:bg-black data-[state=unchecked]:bg-gray-300 dark:data-[state=unchecked]:bg-gray-700 transition-colors duration-300"
+                                    />
+                                ) : (
+                                    <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                        formState.isTranslated 
+                                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' 
+                                            : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
+                                    } transition-colors duration-300`}>
+                                        {formState.isTranslated ? 'Translated' : 'Not Translated'}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </ScrollArea>
         </ScrollArea>
